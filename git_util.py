@@ -9,19 +9,17 @@ import os
 import subprocess
 from datetime import datetime
 
-from messaging import display_message as dm
 from rich.console import Console
+
 import python_sops as ps
+from messaging import display_message as dm
 
 # -----------------------------------------------
 # VARIABLES
 # -----------------------------------------------
 
 HOME = os.path.expanduser("~")
-PATHS = [
-    f"{HOME}/{ps.get_secret('notes_path')}",
-    f"{HOME}/pics/wallpapers/",
-]
+PATHS = [f"{HOME}/{ps.get_secret('notes_path')}", f"{HOME}/pics/wallpapers/"]
 EXCLUDE_DIRS = [
     "-gE",
     ".local/share",
