@@ -1,0 +1,5 @@
+[default]
+extend-ignore-identifiers-re = ["splitted.*"]
+
+[files]
+extend-exclude = ["*.csv", "*.ini"]
