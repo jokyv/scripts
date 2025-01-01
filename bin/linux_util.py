@@ -165,6 +165,7 @@ if __name__ == "__main__":
     parser.add_argument("-sb", "--source_bash_profile", action="store_true")
     parser.add_argument("-cdd", "--cd_with_eza", action="store_true")
     parser.add_argument("-hlc", "--hours_since_last_commit", action="store_true")
+    parser.add_argument("-wth", "--weather", action="store_true")
 
     args = parser.parse_args()
     if args.source_bash_profile:
@@ -173,3 +174,5 @@ if __name__ == "__main__":
         cd_with_eza()
     elif args.hours_since_last_commit:
         hours_since_last_commit()
+    elif args.weather:
+        weather()
