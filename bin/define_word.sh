@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 
-word=${1:-$(xclip -o -selection primary)}
+word=${1:-$(wl-paste --primary)}
 
 query=$(curl -s "https://api.dictionaryapi.dev/api/v2/entries/en_US/$word")
 
@@ -10,7 +10,7 @@ query=$(curl -s "https://api.dictionaryapi.dev/api/v2/entries/en_US/$word")
 def=$(echo "$query" | jq -r '[.[].meanings[] | {pos: .partOfSpeech, def: .definitions[].definition}] | .[:3].[] | "\n\(.pos). \(.def)"')
 
 # Requires a notification daemon to be installed
-notify-send -t 60000 "$word -" "$def"
+notify-send "$word -" "$def"
 
 
 ### MORE OPTIONS :)
