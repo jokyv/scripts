@@ -16,7 +16,7 @@ from messaging import display_message as dm
 # -----------------------------------------------
 
 HOME_DIR = os.path.expanduser("~")
-TEMPLATE_PATH = f"{HOME_DIR}/nixos-config/bin/python_template.py"
+TEMPLATE_PATH = f"{HOME_DIR}/scripts/bin/python/python_project_template.py"
 
 # -----------------------------------------------
 # FUNCTIONS
