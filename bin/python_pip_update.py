@@ -16,26 +16,35 @@ from messaging import display_message as dm
 # -----------------------------------------------
 
 LIBRARIES_TO_UPDATE = [
+    # visualization 
     "altair",
-    "fastapi",
     "hvplot",
-    "ipython",
+    "panel",
+
+    # linting & formating & data hints
     "mypy",
+    "pylsp-mypy",  # plugin for mypy
+    "python-lsp-server",
+    "ruff",
+
+    # scientific computing
+    "ipython",
     "numpy",
     "pandas",
-    "panel",
-    "pip",
     "polars",
     "pyarrow",
     "pydantic",
-    "pylsp-mypy",  # plugin for mypy
-    "python-lsp-server",
+   
+    # web development
+    "fastapi",
+    "uvicorn",
+
+    # misc
+    "pip",
     "requests",
     "rich",
-    "ruff",
     "tqdm",
     "uv",
-    "uvicorn",
 ]
 
 # -----------------------------------------------
