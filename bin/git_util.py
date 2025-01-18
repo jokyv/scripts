@@ -78,7 +78,7 @@ def auto_commit(paths: list[str]) -> None:
         else:
             subprocess.run(["git", "add", "."], cwd=path)
             commit_message = (
-                f"auto script update at: {datetime.now().strftime('%d-%m-%Y %H:%M:%S')}"
+                f"auto script backup at: {datetime.now().strftime('%d-%m-%Y %H:%M:%S')}"
             )
             subprocess.run(["git", "commit", "-q", "-m", commit_message], cwd=path)
             subprocess.run(["git", "push", "-q"], cwd=path)
