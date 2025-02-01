@@ -56,27 +56,39 @@ def auto_commit(paths: list[str]) -> None:
 
     for path in paths:
         console.print("")
-        console.rule("[bold red]Checking repo")
+        console.rule("[bold red]Repository checks")
         if not os.path.exists(path):
             dm("FAILURE", f"Path: {path} does not exist.")
+            # skip to the next path
             continue
 
         # Check for files over size limit
-        dm("CHECKING", f"Checking large files (>{FILE_SIZE_LIMIT}MB) in repo")
+        dm("CHECKING", f"Checking large files (>{FILE_SIZE_LIMIT}MB) in repo: {path}")
         big_files = subprocess.run(
-            ["fd", "-H", "--size", f"+{FILE_SIZE_LIMIT}MB", "-gE", ".git", "."],
+            # search including hidden files, above 50MB excluding .git dir
+            # fd -H --size +MB -gE .git
+            ["fd", "-H", "--size", f"+{FILE_SIZE_LIMIT}MB", "-gE", ".git"],
             cwd=path,
             capture_output=True,
             text=True,
         ).stdout.splitlines()
-        
+
         if big_files:
-            dm("WARNING", f"Files larger than {FILE_SIZE_LIMIT}MB detected, skipping commit")
+            dm(
+                "WARNING",
+                f"Files larger than {FILE_SIZE_LIMIT}MB detected, skipping commit",
+            )
             for file in big_files:
                 dm("WARNING", f"Large file: {file}")
+            # skip to the next path
             continue
+        else:
+            dm(
+                "SUCCESS",
+                f"No Files larger than {FILE_SIZE_LIMIT}MB found. Continuing...",
+            )
 
-        dm("CHECKING", f"Any changes for repo: {path}")
+        dm("CHECKING", f"If any changes for repo: {path}")
 
         # Run git status to check for changes
         git_status_process = subprocess.run(
