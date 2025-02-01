@@ -97,12 +97,48 @@ def select_from_history():
         sys.exit(1)
 
 
+def delete_from_history():
+    """Delete selected entry from cliphist history"""
+    try:
+        # Get list of entries
+        list_process = subprocess.Popen(["cliphist", "list"], stdout=subprocess.PIPE)
+        
+        # Select entry to delete using fuzzel
+        fuzzel_process = subprocess.Popen(
+            ["fuzzel", "--dmenu"], 
+            stdin=list_process.stdout,
+            stdout=subprocess.PIPE
+        )
+        list_process.stdout.close()
+        
+        selected = fuzzel_process.communicate()[0].decode().strip()
+        if not selected:
+            send_notification("Clipboard History", "No selection made", "critical")
+            return
+        
+        # Extract entry ID (cliphist entries are in format "ID\tCONTENT")
+        entry_id = selected.split('\t')[0]
+        
+        # Delete the selected entry
+        subprocess.run(["cliphist", "delete", entry_id], check=True)
+        
+        send_notification(
+            "Clipboard History",
+            f"Deleted entry: {selected[:50]}{'...' if len(selected) > 50 else ''}",
+            "normal"
+        )
+        
+    except subprocess.CalledProcessError as e:
+        send_notification("Error", f"Failed to delete entry: {str(e)}", "critical")
+        sys.exit(1)
+
+
 def main():
     parser = argparse.ArgumentParser(description="Clipboard history management tool")
     parser.add_argument(
         "command",
-        choices=["add", "sel", "paste"],
-        help="Command to execute (add: add highlighted text, sel: select from history, paste: paste current clipboard)",
+        choices=["add", "sel", "paste", "del"],
+        help="Command to execute (add: add highlighted text, sel: select from history, paste: paste current clipboard, del: delete entry)",
     )
 
     args = parser.parse_args()
@@ -113,6 +149,8 @@ def main():
         select_from_history()
     elif args.command == "paste":
         paste_clipboard()
+    elif args.command == "del":
+        delete_from_history()
 
 
 if __name__ == "__main__":
