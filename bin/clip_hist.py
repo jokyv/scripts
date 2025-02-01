@@ -102,32 +102,31 @@ def delete_from_history():
     try:
         # Get list of entries
         list_process = subprocess.Popen(["cliphist", "list"], stdout=subprocess.PIPE)
-        
+
         # Select entry to delete using fuzzel
         fuzzel_process = subprocess.Popen(
-            ["fuzzel", "--dmenu"], 
-            stdin=list_process.stdout,
-            stdout=subprocess.PIPE
+            ["fuzzel", "--dmenu"], stdin=list_process.stdout, stdout=subprocess.PIPE
         )
         list_process.stdout.close()
-        
+
         selected = fuzzel_process.communicate()[0].decode().strip()
         if not selected:
             send_notification("Clipboard History", "No selection made", "critical")
             return
-        
+
         # Extract entry ID (cliphist entries are in format "ID\tCONTENT")
-        entry_id = selected.split('\t')[0]
-        
+        entry_id = selected.split("\t")[0]
+        entry = selected.split("\t")[1]
+
         # Delete the selected entry
-        subprocess.run(["cliphist", "delete", entry_id], check=True)
-        
+        subprocess.run(["cliphist", "delete-query", entry], check=True)
+
         send_notification(
             "Clipboard History",
-            f"Deleted entry: {selected[:50]}{'...' if len(selected) > 50 else ''}",
-            "normal"
+            f"Deleted id: {entry_id} with entry: {entry[:50]}{'...' if len(entry) > 50 else ''}",
+            "critical",
         )
-        
+
     except subprocess.CalledProcessError as e:
         send_notification("Error", f"Failed to delete entry: {str(e)}", "critical")
         sys.exit(1)
