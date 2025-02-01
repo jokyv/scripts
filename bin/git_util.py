@@ -45,12 +45,12 @@ console = Console()
 def auto_commit(paths: list[str]) -> None:
     """
     Function that automatically git commit and push repo list.
+    Skips commit if any files over 50MB are detected in the repo.
 
     Parameters
     ----------
     paths : list[str]
         list of paths with repos to check, commit and push
-
     """
     console = Console()
 
@@ -61,8 +61,21 @@ def auto_commit(paths: list[str]) -> None:
             dm("FAILURE", f"Path: {path} does not exist.")
             continue
 
-        # dm("INFO", "Pulling all the latest commits")
-        # subprocess.run(["git", "pull"], cwd=path)
+        # Check for files over size limit
+        dm("CHECKING", f"Checking large files (>{FILE_SIZE_LIMIT}MB) in repo")
+        big_files = subprocess.run(
+            ["fd", "-H", "--size", f"+{FILE_SIZE_LIMIT}MB", "-gE", ".git", "."],
+            cwd=path,
+            capture_output=True,
+            text=True,
+        ).stdout.splitlines()
+        
+        if big_files:
+            dm("WARNING", f"Files larger than {FILE_SIZE_LIMIT}MB detected, skipping commit")
+            for file in big_files:
+                dm("WARNING", f"Large file: {file}")
+            continue
+
         dm("CHECKING", f"Any changes for repo: {path}")
 
         # Run git status to check for changes
