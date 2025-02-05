@@ -9,10 +9,9 @@ import os
 import subprocess
 from datetime import datetime
 
-from rich.console import Console
-
 import python_sops as ps
 from messaging import display_message as dm
+from rich.console import Console
 
 # -----------------------------------------------
 # VARIABLES
@@ -45,17 +44,19 @@ console = Console()
 def auto_commit(paths: list[str]) -> None:
     """
     Function that automatically git commit and push repo list.
+
     Skips commit if any files over 50MB are detected in the repo.
 
     Parameters
     ----------
     paths : list[str]
         list of paths with repos to check, commit and push
+
     """
     console = Console()
 
     for path in paths:
-        console.print("")
+        # console.print("")
         console.rule("[bold red]Repository checks")
         if not os.path.exists(path):
             dm("FAILURE", f"Path: {path} does not exist.")
