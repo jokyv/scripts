@@ -8,48 +8,48 @@ This is a collection of my personal utility scripts to speed up my life!
 
 ## How this repo is organised:
 
-- archived_scripts folder has all the old/unused scripts.
-- bin has all the active/frequently used scripts.
-- secrets.enc.yaml conains all my secrets and managed using [sops](https://github.com/getsops/sops)
+Key structural notes:
+- `*.util.py` files are CLI entry points using argparse
+- Shared utilities live in:
+  - `bash_util.sh` - Reusable Bash functions
+  - `messaging.py` - Standardized terminal output formatting
+- Python scripts require Python 3.10+ and the following dependencies:
+  - `sops` for secret management
+  - `fuzzel` for fuzzy selection interfaces
+  - `wl-clipboard`/`cliphist` for clipboard handling
 
 ## Who is this for:
 
 - NixOS (primary).
 - Arch Linux (secondary, but still should work).
-- MacOS (*_util.py scripts should work everything else probably NOT).
+- MacOS (Python utilities should work, shell scripts may NOT).
 - Windows (Meh!)
-
-## How to use this repo:
-
-### Add scripts to your path
-
-- `git clone git@github.com:jokyv/scripts.git` into your computer.
-- Add to your path the `path/to/scripts/bin/`.
-
-### Alternatively use symlinks
-
-- `ln -s path/to/scripts/bin/* ~/.local/bin/`
-- make sure `~/.local/bin` is in your path.
 
 ## Scripts:
 
-- Core utility CLI apps:
-  - fzf_util.py CLI app with all my fzf scripts
-  - git_util.py CLI app with all my git scripts
-  - linux_util.py CLI app with all my general linux scripts
+### Core Utilities
+- `fzf_util.py` - Fuzzy file workflows (selection/moving/copying/trash management)
+- `git_util.py` - Automated git operations (auto-commit/pull-all/status checks)
+- `linux_util.py` - System monitoring (process/kill/weather/disk checks)
+- `clip_hist.py` - Clipboard history management (Wayland-compatible)
 
-- Python scripts:
-  - dfn.py small script to pring the date format i want into helix
-  - python_pip_update.py functions to update core or all my python libraries
-  - messaging.py my messaging function for pretty terminal prints
+### Python Tools
+- `python_sops.py` - Encrypted secrets manager with SOPS integration
+- `python_pip_update.py` - Batch pip package updater using uv
+- `dfn.py` - Date-formatted filenames generator
+- `messaging.py` - Rich-text console output formatting
 
-- Shell scripts:
-  - *_bookmarks.sh fuzzel app for my firefox and brave bookmark launcher
-  - update_wall.sh update wallpaper and send notification of the action
-  - take_screenshot.sh take a screenshot
-  - update_grub.sh update grub config
-  - my_logout.sh fuzzel app to select logout options
+### Shell Scripts
+- `bash_util.sh` - Shared bash helpers (user prompts/input validation)
+- System utilities:
+  - Browser bookmark launchers (`*_bookmarks.sh`)
+  - Hardware/display management (`update_wall.sh`, `update_grub.sh`)
+  - Session utilities (`take_screenshot.sh`, `my_logout.sh`)
 
-- Secret scripts:
-  - git_crypt_init.py commands on how to setup [git-crypt](https://github.com/AGWA/git-crypt)
-  - python_sops.py functions to decrypt a sops encrypted YAML file
+### Security Tools
+- `git_crypt_init.sh` - Encrypted git repository setup
+- `python_sops.py` - SOPS YAML decryption/secret retrieval
+- `secrets.enc.yaml` - Central secret store (credentials/API keys)
+
+> [!NOTE]
+> Installation instructions remain valid - clone repo and add `bin/` to PATH
