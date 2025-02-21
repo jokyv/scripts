@@ -2,7 +2,7 @@
 
 # NOTES
 # - always remember to have absolute paths
-# - always remember to ...
+# - always remember to numpy docstrings
 
 # -----------------------------------------------
 # LIBRARIES
