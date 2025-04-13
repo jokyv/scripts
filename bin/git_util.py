@@ -8,6 +8,7 @@ import argparse
 import os
 import subprocess
 from datetime import datetime
+import sys
 
 import python_sops as ps
 from messaging import display_message as dm
@@ -326,6 +327,120 @@ def status_all_git_dirs() -> None:
         os.chdir(os.path.expanduser("~"))
 
 
+def create_and_push_gh_repo(repo_dir="."):
+    """
+    Creates a private GitHub repository from a specified directory,
+    pushes the current branch (HEAD) from that directory, and opens
+    the new repository page in the default web browser.
+
+    Assumes 'gh' (GitHub CLI) and 'git' are installed, authenticated (for gh),
+    and available in the system's PATH. The commands are run within the
+    specified directory.
+
+    Parameters
+    ----------
+    repo_dir : str
+        The path to the local directory to use as the source.
+        Defaults to the current directory (".").
+
+    Raises
+    ------
+        FileNotFoundError: If 'gh' or 'git' command is not found.
+        subprocess.CalledProcessError: If any of the underlying shell commands fail.
+        Exception: For other unexpected errors during execution.
+
+    Returns
+    -------
+        bool : True if all steps completed successfully, False otherwise.
+    """
+    # Ensure the directory exists
+    if not os.path.isdir(repo_dir):
+        print(f"Error: Directory not found: {repo_dir}", file=sys.stderr)
+        return False
+
+    # Define the sequence of commands as lists of arguments
+    # Running commands in the specified directory using cwd=repo_dir
+    commands = [
+        ["gh", "repo", "create", "--private", "--source=.", "--remote=origin"],
+        ["git", "push", "-u", "origin", "HEAD"],
+        ["gh", "browse"],
+    ]
+
+    current_step = ""
+    try:
+        # Step 1: Create GitHub repository
+        current_step = "gh repo create"
+        print(f"Running in '{os.path.abspath(repo_dir)}': {' '.join(commands[0])}")
+        # Use capture_output=True and text=True to get stdout/stderr
+        # check=True raises CalledProcessError on failure
+        result_create = subprocess.run(
+            commands[0],
+            check=True,
+            capture_output=True,
+            text=True,
+            cwd=repo_dir,  # Run command in the target directory
+        )
+        print(f"Success: {current_step}")
+        if result_create.stdout:
+            print(f"Output:\n{result_create.stdout.strip()}")
+        if result_create.stderr:
+            print(f"Info/Warnings:\n{result_create.stderr.strip()}", file=sys.stderr)
+
+        # Step 2: Push the current branch
+        current_step = "git push"
+        print(f"Running in '{os.path.abspath(repo_dir)}': {' '.join(commands[1])}")
+        result_push = subprocess.run(
+            commands[1], check=True, capture_output=True, text=True, cwd=repo_dir
+        )
+        print(f"Success: {current_step}")
+        if result_push.stdout:
+            print(f"Output:\n{result_push.stdout.strip()}")
+        if result_push.stderr:
+            print(f"Info/Warnings:\n{result_push.stderr.strip()}", file=sys.stderr)
+
+        # Step 3: Open in browser
+        current_step = "gh browse"
+        print(f"Running in '{os.path.abspath(repo_dir)}': {' '.join(commands[2])}")
+        # Browse usually doesn't output much, but capture anyway
+        result_browse = subprocess.run(
+            commands[2], check=True, capture_output=True, text=True, cwd=repo_dir
+        )
+        print(f"Success: {current_step}")
+        if (
+            result_browse.stderr
+        ):  # Often gh browse prints the URL it's opening to stderr
+            print(f"Info/Warnings:\n{result_browse.stderr.strip()}", file=sys.stderr)
+
+        print("\nAll steps completed successfully.")
+        return True
+
+    except FileNotFoundError as e:
+        print(
+            f"\nError: Command '{e.filename}' not found during step '{current_step}'.",
+            file=sys.stderr,
+        )
+        print(
+            "Please ensure 'gh' and 'git' are installed and in your system's PATH.",
+            file=sys.stderr,
+        )
+        return False
+    except subprocess.CalledProcessError as e:
+        print(f"\nError: Command failed during step '{current_step}'.", file=sys.stderr)
+        print(f"Command: {' '.join(e.cmd)}", file=sys.stderr)
+        print(f"Return code: {e.returncode}", file=sys.stderr)
+        if e.stdout:
+            print(f"stdout:\n{e.stdout.strip()}", file=sys.stderr)
+        if e.stderr:
+            print(f"stderr:\n{e.stderr.strip()}", file=sys.stderr)
+        return False
+    except Exception as e:
+        print(
+            f"\nAn unexpected error occurred during step '{current_step}': {e}",
+            file=sys.stderr,
+        )
+        return False
+
+
 # -----------------------------------------------
 # MAIN
 # -----------------------------------------------
@@ -343,6 +458,7 @@ if __name__ == "__main__":
     parser.add_argument("-pld", "--pull_all_dirs", action="store_true")
     parser.add_argument("-pud", "--push_all_dirs", action="store_true")
     parser.add_argument("-std", "--status_all_dirs", action="store_true")
+    parser.add_argument("-crepo", "--create_push_gh_repo", action="store_true")
 
     args = parser.parse_args()
     if args.commit_workflow:
@@ -362,5 +478,7 @@ if __name__ == "__main__":
         push_all_git_dirs()
     elif args.status_all_dirs:
         status_all_git_dirs()
+    elif args.create_push_gh_repo:
+        create_and_push_gh_repo()
     else:
         print("Command was NOT found")
