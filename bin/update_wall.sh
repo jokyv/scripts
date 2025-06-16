@@ -15,7 +15,7 @@ fi
 WALLPAPERS_DIR="$HOME/pics/wallpapers"
 
 # Select a random wallpaper
-WALLPAPER=$(find "$WALLPAPERS_DIR" -type f | shuf -n1)
+WALLPAPER=$(find "$WALLPAPERS_DIR" -type f -not -path '*/\.git/*' -not -name '.gitignore' | shuf -n1)
 
 # Set the wallpaper
 swww img "$WALLPAPER" --transition-fps 60 --transition-type any --transition-duration 3
