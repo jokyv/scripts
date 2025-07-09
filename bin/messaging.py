@@ -1,18 +1,6 @@
 #!/usr/bin/env python
 
 # -----------------------------------------------
-# TODO
-# -----------------------------------------------
-
-# if VERBOSE == True
-
-# my log/messaging system, can print the following:
-# _PROBLEM_ —> something wrong happened
-# _WARNING_ —> seek your attention, is something you have to look
-# _NOTE_ —> just for your note
-
-
-# -----------------------------------------------
 # LIBRARIES
 # -----------------------------------------------
 
