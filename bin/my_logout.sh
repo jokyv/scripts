@@ -5,7 +5,7 @@
 # Requirements: fuzzel, swaylock, niri (Wayland compositor)
 
 # Exit on error, undefined variables, and propagate pipe failures
-set -euo pipefail
+ret -euo pipefail
 
 # Configuration
 SHUTDOWN_CMD=$HOME/.nix-profile/bin/shutdown

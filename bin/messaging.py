@@ -14,13 +14,15 @@ from rich.theme import Theme
 
 LEVEL: str = "info"
 MESSAGE: str = "you did it!"
-CUSTOM_THEME = Theme({
-    "warning": "red",
-    "info": "magenta",
-    "success": "green",
-    "failure": "red",
-    "checking": "yellow",
-})
+CUSTOM_THEME = Theme(
+    {
+        "warning": "red",
+        "info": "magenta",
+        "success": "green",
+        "failure": "red",
+        "checking": "yellow",
+    }
+)
 
 # -----------------------------------------------
 # FUNCTIONS
