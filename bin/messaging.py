@@ -14,6 +14,13 @@ from rich.theme import Theme
 
 LEVEL: str = "info"
 MESSAGE: str = "you did it!"
+CUSTOM_THEME = Theme({
+    "warning": "red",
+    "info": "magenta",
+    "success": "green",
+    "failure": "red",
+    "checking": "yellow",
+})
 
 # -----------------------------------------------
 # FUNCTIONS
@@ -31,6 +38,11 @@ def display_message(level: str, message: str) -> None:
     message : str
         The message to display.
 
+    Raises
+    ------
+    ValueError
+        If invalid level is provided
+
     Examples
     --------
     display_message("warning", "This is a warning message.")
@@ -41,21 +53,14 @@ def display_message(level: str, message: str) -> None:
 
     """
     level_lower = level.lower()
-    valid_levels = ["warning", "info", "success", "failure", "checking"]
+    match level_lower:
+        case "warning" | "info" | "success" | "failure" | "checking":
+            pass
+        case _:
+            valid_levels = ["warning", "info", "success", "failure", "checking"]
+            raise ValueError(f"Invalid level: {level}. Valid options: {valid_levels}")
 
-    if level_lower not in valid_levels:
-        raise ValueError(f"Invalid status: {level}. Expected one of {valid_levels}")
-
-    custom_themes = Theme(
-        {
-            "warning": "red",
-            "info": "magenta",
-            "success": "green",
-            "failure": "red",
-            "checking": "yellow",
-        }
-    )
-    console = Console(theme=custom_themes)
+    console = Console(theme=CUSTOM_THEME)
     try:
         console.print(f"[bold]:: {level}[/bold] -", message, style=level_lower)
     except MissingStyle:
