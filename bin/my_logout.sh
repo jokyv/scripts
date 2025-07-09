@@ -7,9 +7,9 @@
 # Exit on error, undefined variables, and propagate pipe failures
 ret -euo pipefail
 
-# Configuration
-SHUTDOWN_CMD=$HOME/.nix-profile/bin/shutdown
-REBOOT_CMD=$HOME/.nix-profile/bin/reboot
+# NixOS specific
+# SHUTDOWN_CMD=$HOME/.nix-profile/bin/shutdown
+# REBOOT_CMD=$HOME/.nix-profile/bin/reboot
 
 # Function to check if command exists
 command_exists() {
@@ -60,12 +60,12 @@ selection=$(echo -e "$options" | fuzzel --prompt "$prompt - Please Make a Select
 case $selection in
     Shutdown)
         if confirm_action "shutdown"; then
-            execute_action "$HOME/.nix-profile/bin/shutdown -h now"
+            execute_action "systemctl poweroff"
         fi
         ;;
     Reboot)
         if confirm_action "reboot"; then
-            execute_action "$HOME/.nix-profile/bin/reboot"
+            execute_action "systemctl reboot"
         fi
         ;;
     Logout)
