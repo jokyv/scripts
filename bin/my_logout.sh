@@ -108,24 +108,3 @@ case $selection in
         exit 0
         ;;
 esac
-
-
-# OLD and much simper script that does the same thing :P
-# SRL=$(echo -e "Shutdown\nReboot\nLogout\nLock\nCancel" | fuzzel --prompt "- Please Make a Selection:" --dmenu)
-
-# case $SRL in
-#     Shutdown) 
-#         $HOME/.nix-profile/bin/shutdown -h now
-#         ;;
-#     Reboot)
-#         $HOME/.nix-profile/bin/reboot
-#         ;;
-#     Logout)
-#         pkill niri
-#         ;;
-#     Lock)
-#         swaylock
-#         ;;
-#     *)
-#         ;;
-# esac
