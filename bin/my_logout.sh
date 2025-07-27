@@ -5,7 +5,7 @@
 # Requirements: fuzzel, swaylock, niri (Wayland compositor)
 
 # Exit on error, undefined variables, and propagate pipe failures
-ret -euo pipefail
+# ret -euo pipefail
 
 # NixOS specific
 # SHUTDOWN_CMD=$HOME/.nix-profile/bin/shutdown
@@ -53,7 +53,7 @@ execute_action() {
 
 check_uncommitted_changes() {
     # Run git_util.py and capture the output to both display and detect changes
-    if python bin/git_util.py --status_all_dirs 2>&1 | grep -q "repo needs a git commit"; then
+    if git_util.py --status_all_dirs 2>&1 | grep -q "repo needs a git commit"; then
         return 0  # changes exist
     else
         return 1  # no changes
