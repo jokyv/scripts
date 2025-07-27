@@ -51,6 +51,23 @@ execute_action() {
     fi
 }
 
+check_uncommitted_changes() {
+    # Run git_util.py and capture the output
+    local changes_output
+    changes_output=$(python bin/git_util.py --status_all_dirs 2>&1)
+    # Check for uncommitted changes warning string
+    if echo "$changes_output" | grep -q "repo needs a git commit"; then
+        return 0  # changes exist
+    else
+        return 1  # no changes
+    fi
+}
+
+confirm_ignore_changes() {
+    echo -e "Yes\nNo" | fuzzel --prompt "Uncommitted changes exist! Shutdown anyway?" \
+        --dmenu | grep -q "^Yes$"
+}
+
 # Main menu
 prompt=$(format_uptime)
 options="Shutdown\nReboot\nLogout\nLock\nSleep\nCancel"
@@ -60,7 +77,13 @@ selection=$(echo -e "$options" | fuzzel --prompt "$prompt - Please Make a Select
 case $selection in
     Shutdown)
         if confirm_action "shutdown"; then
-            execute_action "systemctl poweroff"
+            if check_uncommitted_changes; then
+                if confirm_ignore_changes; then
+                    execute_action "systemctl poweroff"
+                fi
+            else
+                execute_action "systemctl poweroff"
+            fi
         fi
         ;;
     Reboot)
