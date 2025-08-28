@@ -53,10 +53,11 @@ execute_action() {
 
 check_uncommitted_changes() {
     # Run git_util.py and check the return value
-    if git_util.py --status_all_dirs; then
-        return 0  # changes exist
+    # Note: git_util.py returns 0 when changes exist, 1 when no changes
+    if python "$HOME/scripts/bin/git_util.py" --status_all_dirs; then
+        return 0  # changes exist (exit code 0 = true in bash)
     else
-        return 1  # no changes
+        return 1  # no changes (exit code 1 = false in bash)
     fi
 }
 
@@ -74,13 +75,18 @@ selection=$(echo -e "$options" | fuzzel --prompt "$prompt - Please Make a Select
 case $selection in
     Shutdown)
         if confirm_action "shutdown"; then
+            # Check if there are uncommitted changes
             if check_uncommitted_changes; then
+                # Changes exist - ask for confirmation to ignore them
                 if confirm_ignore_changes; then
-                    notify-send "Shutting down" "Performing system shutdown now" -t 1500
+                    notify-send "Shutting down" "Ignoring uncommitted changes. Performing system shutdown now" -t 1500
                     # execute_action "systemctl poweroff"
                     # echo 'shutdown 1'
+                else
+                    notify-send "Shutdown canceled" "Shutdown was canceled due to uncommitted changes" -t 1500
                 fi
             else
+                # No changes exist - proceed with shutdown
                 notify-send "Shutting down" "Performing system shutdown now" -t 1500
                 # execute_action "systemctl poweroff"
                 # echo 'shutdown 2'
