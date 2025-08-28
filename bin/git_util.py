@@ -295,7 +295,11 @@ def push_all_git_dirs() -> None:
             dm("SUCCESS", "git auto commit was pushed!")
 
 
-def status_all_git_dirs() -> None:
+def status_all_git_dirs() -> bool:
+    """
+    Check all Git directories for uncommitted changes.
+    Returns True if any repository has uncommitted changes, False otherwise.
+    """
     # init console
     console = Console()
 
@@ -310,6 +314,8 @@ def status_all_git_dirs() -> None:
         text=True,
     ).stdout.splitlines()
 
+    changes_exist = False
+
     # Iterate through found git directories
     for git_dir in git_dirs:
         os.chdir(git_dir)
@@ -323,8 +329,11 @@ def status_all_git_dirs() -> None:
             console.print("")
             dm("WARNING", f"{git_dir} repo needs a git commit")
             subprocess.run(["git", "status", "-sb"])
+            changes_exist = True
         # return to HOME
         os.chdir(os.path.expanduser("~"))
+
+    return changes_exist
 
 
 def create_and_push_gh_repo(repo_dir="."):
@@ -477,7 +486,10 @@ if __name__ == "__main__":
     elif args.push_all_dirs:
         push_all_git_dirs()
     elif args.status_all_dirs:
-        status_all_git_dirs()
+        if status_all_git_dirs():
+            sys.exit(0)  # Changes exist
+        else:
+            sys.exit(1)  # No changes
     elif args.create_push_gh_repo:
         create_and_push_gh_repo()
     else:

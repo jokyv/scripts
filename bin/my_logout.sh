@@ -52,8 +52,8 @@ execute_action() {
 }
 
 check_uncommitted_changes() {
-    # Run git_util.py and capture the output to both display and detect changes
-    if git_util.py --status_all_dirs 2>&1 | grep -q "repo needs a git commit"; then
+    # Run git_util.py and check the return value
+    if git_util.py --status_all_dirs; then
         return 0  # changes exist
     else
         return 1  # no changes
