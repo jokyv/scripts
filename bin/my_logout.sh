@@ -77,11 +77,13 @@ case $selection in
             if check_uncommitted_changes; then
                 if confirm_ignore_changes; then
                     notify-send "Shutting down" "Performing system shutdown now" -t 1500
-                    execute_action "systemctl poweroff"
+                    # execute_action "systemctl poweroff"
+                    # echo 'shutdown 1'
                 fi
             else
                 notify-send "Shutting down" "Performing system shutdown now" -t 1500
-                execute_action "systemctl poweroff"
+                # execute_action "systemctl poweroff"
+                # echo 'shutdown 2'
             fi
         else
             notify-send "Shutdown canceled" "Shutdown was canceled" -t 1500
