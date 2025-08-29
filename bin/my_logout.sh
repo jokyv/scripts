@@ -80,16 +80,14 @@ case $selection in
                 # Changes exist - ask for confirmation to ignore them
                 if confirm_ignore_changes; then
                     notify-send "Shutting down" "Ignoring uncommitted changes. Performing system shutdown now" -t 1500
-                    # execute_action "systemctl poweroff"
-                    # echo 'shutdown 1'
+                    execute_action "systemctl poweroff"
                 else
                     notify-send "Shutdown canceled" "Shutdown was canceled due to uncommitted changes" -t 1500
                 fi
             else
                 # No changes exist - proceed with shutdown
                 notify-send "Shutting down" "Performing system shutdown now" -t 1500
-                # execute_action "systemctl poweroff"
-                # echo 'shutdown 2'
+                execute_action "systemctl poweroff"
             fi
         else
             notify-send "Shutdown canceled" "Shutdown was canceled" -t 1500
