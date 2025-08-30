@@ -114,7 +114,9 @@ def find_program_path(program_name: str) -> str:
 
 def main() -> None:
     """Main function to handle program selection and execution."""
-    directories = ["/usr/bin/", "/bin/"]
+    # Use only the scripts bin directory
+    scripts_bin = str(Path.home() / "scripts" / "bin")
+    directories = [scripts_bin]
     
     try:
         # Find all executable programs
@@ -130,15 +132,14 @@ def main() -> None:
         if not selected_program:
             sys.exit(0)
         
-        # Find the full path and execute
-        program_path = find_program_path(selected_program)
+        # Find the full path in the scripts bin directory
+        program_path = str(Path(scripts_bin) / selected_program)
         
-        if program_path:
+        if Path(program_path).is_file() and os.access(program_path, os.X_OK):
             # Use execvp to replace the current process with the selected program
-            # This mimics the behavior of the original shell script
             os.execvp(program_path, [program_path])
         else:
-            print(f"Error: Could not find path for '{selected_program}'", file=sys.stderr)
+            print(f"Error: '{program_path}' is not executable or doesn't exist", file=sys.stderr)
             sys.exit(1)
             
     except KeyboardInterrupt:
