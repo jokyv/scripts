@@ -19,12 +19,44 @@ def get_browser_bookmarks(browser: str) -> Union[List[Tuple[str, str]], List[str
     
     Returns:
         For Firefox: List of (title, url) tuples
-        For Brave: List of URL strings
+        For Brave: List of (title, url) tuples
     """
     if browser == "firefox":
-        # Find Firefox profile
-        profile_path = next(Path("~/.mozilla/firefox").expanduser().glob("*.default-release"), None)
-        if not profile_path:
+        # Find Firefox profile directory
+        firefox_dir = Path("~/.mozilla/firefox").expanduser()
+        if not firefox_dir.exists():
+            raise FileNotFoundError("Firefox directory not found")
+        
+        # Look for profiles.ini to find the default profile
+        profiles_ini = firefox_dir / "profiles.ini"
+        profile_path = None
+        
+        if profiles_ini.exists():
+            # Parse profiles.ini to find the default profile
+            import configparser
+            config = configparser.ConfigParser()
+            config.read(profiles_ini)
+            
+            for section in config.sections():
+                if section.startswith('Profile') and config.get(section, 'Default', fallback='0') == '1':
+                    path = config.get(section, 'Path', fallback='')
+                    if path:
+                        profile_path = firefox_dir / path
+                        break
+                # If no default found, try to find any profile with IsRelative=1
+                if profile_path is None and section.startswith('Profile'):
+                    if config.get(section, 'IsRelative', fallback='0') == '1':
+                        path = config.get(section, 'Path', fallback='')
+                        if path:
+                            profile_path = firefox_dir / path
+        else:
+            # Fallback: try to find any directory ending with .default or .default-release
+            for pattern in ["*.default", "*.default-release"]:
+                profile_path = next(firefox_dir.glob(pattern), None)
+                if profile_path:
+                    break
+        
+        if not profile_path or not profile_path.exists():
             raise FileNotFoundError("Firefox profile not found")
         
         # Access SQLite database
@@ -33,40 +65,54 @@ def get_browser_bookmarks(browser: str) -> Union[List[Tuple[str, str]], List[str
             raise FileNotFoundError("Firefox bookmarks database not found")
         
         # Query bookmarks
-        conn = sqlite3.connect(db_path)
+        conn = sqlite3.connect(f"file:{db_path}?mode=ro", uri=True)
         cursor = conn.cursor()
         cursor.execute(
             "SELECT b.title, p.url FROM moz_bookmarks b "
             "JOIN moz_places p ON b.fk = p.id "
-            "WHERE b.type = 1 AND b.title != '' "
+            "WHERE b.type = 1 AND b.title IS NOT NULL AND b.title != '' "
             "ORDER BY b.dateAdded DESC"
         )
-        return cursor.fetchall()
+        results = cursor.fetchall()
+        conn.close()
+        return results
     
     elif browser == "brave":
-        # Access Brave bookmarks file
-        bookmarks_path = Path("~/.config/BraveSoftware/Brave-Browser/Default/Bookmarks").expanduser()
-        if not bookmarks_path.exists():
-            raise FileNotFoundError("Brave bookmarks file not found")
+        # Try multiple possible paths for Brave bookmarks
+        possible_paths = [
+            Path("~/.config/BraveSoftware/Brave-Browser/Default/Bookmarks").expanduser(),
+            Path("~/.config/BraveSoftware/Brave-Browser/Profile 1/Bookmarks").expanduser(),
+            Path("~/.config/brave/Default/Bookmarks").expanduser(),
+        ]
         
-        # Parse JSON and extract URLs
+        bookmarks_path = None
+        for path in possible_paths:
+            if path.exists():
+                bookmarks_path = path
+                break
+        
+        if not bookmarks_path:
+            raise FileNotFoundError("Brave bookmarks file not found in any known location")
+        
+        # Parse JSON and extract URLs with titles
         with open(bookmarks_path, 'r', encoding='utf-8') as f:
             data = json.load(f)
         
-        urls = []
-        # Recursively extract URLs from bookmarks JSON structure
-        def extract_urls(node):
+        bookmarks = []
+        # Recursively extract bookmarks from JSON structure
+        def extract_bookmarks(node):
             if isinstance(node, dict):
-                if "url" in node:
-                    urls.append(node["url"])
+                if "type" in node and node["type"] == "url":
+                    if "url" in node and "name" in node:
+                        bookmarks.append((node["name"], node["url"]))
                 for value in node.values():
-                    extract_urls(value)
+                    extract_bookmarks(value)
             elif isinstance(node, list):
                 for item in node:
-                    extract_urls(item)
+                    extract_bookmarks(item)
         
-        extract_urls(data)
-        return urls
+        extract_bookmarks(data)
+        return bookmarks
     
     else:
         raise ValueError(f"Unsupported browser: {browser}")
@@ -80,12 +126,9 @@ def show_bookmarks_with_fuzzel(bookmarks: Union[List[Tuple[str, str]], List[str]
         bookmarks: Bookmarks data structure specific to the browser
         browser: Browser type to format output appropriately
     """
-    if browser == "firefox":
-        # Format as "title\turl" for Firefox
-        input_text = "\n".join(f"{title}\t{url}" for title, url in bookmarks)
-    else:
-        # Just URLs for Brave
-        input_text = "\n".join(bookmarks)
+    # Always treat bookmarks as list of (title, url) tuples
+    # For Brave, we now return (title, url) tuples, so this is consistent
+    input_text = "\n".join(f"{title}\t{url}" for title, url in bookmarks)
     
     try:
         result = subprocess.run(
@@ -96,9 +139,9 @@ def show_bookmarks_with_fuzzel(bookmarks: Union[List[Tuple[str, str]], List[str]
             check=True
         )
         selected = result.stdout.strip()
-        if browser == "firefox" and selected:
-            # Extract URL from "title\turl" format
-            selected = selected.split('\t')[1] if '\t' in selected else selected
+        # Extract URL from "title\turl" format
+        if selected and '\t' in selected:
+            selected = selected.split('\t')[1]
         return selected
     except subprocess.CalledProcessError:
         return ""
