@@ -4,6 +4,16 @@ sleep .15
 DIR1="/usr/bin/"
 DIR2="/bin/"
 
-Menu="$(ls "$DIR1" "$DIR2"  | cut -d / -f 3 | uniq -u | sort | fzf --prompt="Which Program Would You Like To Run : " --border=rounded --margin=5% --color='fg:104,fg+:255,pointer:12,hl:255,hl+:12,header:12,prompt:255' --height 100% --reverse --header="                    PROGRAMS " --info=hidden --header-first)" 
+# Use fd to find executable files in both directories, then extract just the filename
+Menu="$(fd --max-depth 1 --type executable . "$DIR1" "$DIR2" --exec basename | sort -u | fzf --prompt="Which Program Would You Like To Run : " --border=rounded --margin=5% --color='fg:104,fg+:255,pointer:12,hl:255,hl+:12,header:12,prompt:255' --height 100% --reverse --header="                    PROGRAMS " --info=hidden --header-first)" 
 
-exec "$Menu"
+if [ -n "$Menu" ]; then
+    # Find the full path of the selected executable
+    selected_path=$(which "$Menu" 2>/dev/null)
+    if [ -n "$selected_path" ]; then
+        exec "$selected_path"
+    else
+        echo "Error: Could not find path for '$Menu'"
+        exit 1
+    fi
+fi
