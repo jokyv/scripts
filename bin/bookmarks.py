@@ -127,8 +127,8 @@ def show_bookmarks_with_fuzzel(bookmarks: Union[List[Tuple[str, str]], List[str]
         bookmarks: Bookmarks data structure specific to the browser
         browser: Browser type to format output appropriately
     """
-    # Format as "bookmark name - \033[92mURL\033[0m" with light green color for URL
-    input_text = "\n".join(f"{title} - \033[92m{url}\033[0m" for title, url in bookmarks)
+    # Format as "bookmark name - URL" for better readability
+    input_text = "\n".join(f"{title} - {url}" for title, url in bookmarks)
     
     try:
         result = subprocess.run(
@@ -139,12 +139,9 @@ def show_bookmarks_with_fuzzel(bookmarks: Union[List[Tuple[str, str]], List[str]
             check=True
         )
         selected = result.stdout.strip()
-        # Extract URL from "bookmark name - URL" format (remove ANSI color codes)
+        # Extract URL from "bookmark name - URL" format
         if selected and ' - ' in selected:
-            # Remove ANSI color codes before extracting URL
-            import re
-            clean_selected = re.sub(r'\033\[[0-9;]*m', '', selected)
-            selected = clean_selected.split(' - ')[1]
+            selected = selected.split(' - ')[1]
         return selected
     except subprocess.CalledProcessError:
         return ""
