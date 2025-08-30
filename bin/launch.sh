@@ -1,11 +1,10 @@
 #!/usr/bin/env bash
 
 sleep .15
-DIR1="/usr/bin/"
-DIR2="/bin/"
+DIR="$HOME/scripts/bin/"
 
 # Search each directory separately with fd and combine results
-Menu="$( (fd --max-depth 1 --type executable . "$DIR1"; fd --max-depth 1 --type executable . "$DIR2") | xargs -I {} basename {} | sort -u | fzf --prompt="Which Program Would You Like To Run : " --border=rounded --margin=5% --color='fg:104,fg+:255,pointer:12,hl:255,hl+:12,header:12,prompt:255' --height 100% --reverse --header="                    PROGRAMS " --info=hidden --header-first)" 
+Menu="$( (fd --max-depth 1 --type executable . "$DIR"; fd --max-depth 1 --type executable . "$DIR2") | xargs -I {} basename {} | sort -u | fzf --prompt="Which Program Would You Like To Run : " --border=rounded --margin=5% --color='fg:104,fg+:255,pointer:12,hl:255,hl+:12,header:12,prompt:255' --height 100% --reverse --header="                    PROGRAMS " --info=hidden --header-first)" 
 
 if [ -n "$Menu" ]; then
     # Find the full path of the selected executable
