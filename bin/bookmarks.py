@@ -126,9 +126,8 @@ def show_bookmarks_with_fuzzel(bookmarks: Union[List[Tuple[str, str]], List[str]
         bookmarks: Bookmarks data structure specific to the browser
         browser: Browser type to format output appropriately
     """
-    # Always treat bookmarks as list of (title, url) tuples
-    # For Brave, we now return (title, url) tuples, so this is consistent
-    input_text = "\n".join(f"{title}\t{url}" for title, url in bookmarks)
+    # Format as "bookmark name - URL" for better readability
+    input_text = "\n".join(f"{title} - {url}" for title, url in bookmarks)
     
     try:
         result = subprocess.run(
@@ -139,9 +138,9 @@ def show_bookmarks_with_fuzzel(bookmarks: Union[List[Tuple[str, str]], List[str]
             check=True
         )
         selected = result.stdout.strip()
-        # Extract URL from "title\turl" format
-        if selected and '\t' in selected:
-            selected = selected.split('\t')[1]
+        # Extract URL from "bookmark name - URL" format
+        if selected and ' - ' in selected:
+            selected = selected.split(' - ')[1]
         return selected
     except subprocess.CalledProcessError:
         return ""
