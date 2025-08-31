@@ -28,7 +28,7 @@ def run_cmd(cmd, capture_output=False):
 
 
 def suggest_next_version():
-    """Suggest the next patch version based on the latest tag."""
+    """Suggest the next minor version based on the latest tag."""
     try:
         latest_tag = run_cmd("git describe --tags --abbrev=0", capture_output=True)
         print(f"🔎 Latest version found: {latest_tag}")
@@ -38,7 +38,7 @@ def suggest_next_version():
     match = re.match(r"v?(\d+)\.(\d+)\.(\d+)", latest_tag)
     if match:
         major, minor, patch = map(int, match.groups())
-        return f"v{major}.{minor}.{patch + 1}"
+        return f"v{major}.{minor + 1}.0"
     else:
         # fallback if tag format is unexpected
         return "v0.1.0"
