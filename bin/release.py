@@ -3,6 +3,13 @@
 import subprocess
 import sys
 import re
+import os
+
+repo_root = subprocess.run(
+    ["git", "rev-parse", "--show-toplevel"], check=True, text=True, capture_output=True
+).stdout.strip()
+
+os.chdir(repo_root)
 
 
 def run_cmd(cmd, capture_output=False):
