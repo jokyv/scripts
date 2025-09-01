@@ -27,26 +27,55 @@ def run_cmd(cmd, capture_output=False):
         sys.exit(1)
 
 
-def suggest_next_version():
-    """Suggest the next minor version based on the latest tag."""
+def get_latest_tag():
+    """Get the latest git tag."""
     try:
         latest_tag = run_cmd("git describe --tags --abbrev=0", capture_output=True)
-        print(f"🔎 Latest version found: {latest_tag}")
+        return latest_tag
     except SystemExit:
-        return "v0.1.0"  # fallback if no tags exist
+        return None
 
-    match = re.match(r"v?(\d+)\.(\d+)\.(\d+)", latest_tag)
-    if match:
-        major, minor, patch = map(int, match.groups())
-        return f"v{major}.{minor + 1}.0"
-    else:
-        # fallback if tag format is unexpected
+def suggest_next_version(release_type):
+    """Suggest the next version based on the latest tag and release type."""
+    latest_tag = get_latest_tag()
+    if latest_tag:
+        print(f"🔎 Latest version found: {latest_tag}")
+        match = re.match(r"v?(\d+)\.(\d+)\.(\d+)", latest_tag)
+        if match:
+            major, minor, patch = map(int, match.groups())
+            if release_type == "major":
+                return f"v{major + 1}.0.0"
+            elif release_type == "minor":
+                return f"v{major}.{minor + 1}.0"
+            elif release_type == "patch":
+                return f"v{major}.{minor}.{patch + 1}"
+    # Fallback if no tags exist or unexpected format
+    if release_type == "major":
+        return "v1.0.0"
+    elif release_type == "minor":
         return "v0.1.0"
+    elif release_type == "patch":
+        return "v0.0.1"
+    return "v0.1.0"
 
 
 def main():
-    # 1. Suggest next version
-    suggested = suggest_next_version()
+    # 1. Show latest tag
+    latest_tag = get_latest_tag()
+    if latest_tag:
+        print(f"🔎 Latest version: {latest_tag}")
+    else:
+        print("ℹ️  No existing tags found. Starting from initial version.")
+    
+    # 2. Ask for release type
+    while True:
+        release_type = input("Enter release type (major/minor/patch): ").strip().lower()
+        if release_type in ["major", "minor", "patch"]:
+            break
+        print("❌ Please enter 'major', 'minor', or 'patch'")
+    
+    # 3. Suggest next version based on release type
+    suggested = suggest_next_version(release_type)
     version = input(f"Enter the new version [default: {suggested}]: ").strip()
     if not version:
         version = suggested
