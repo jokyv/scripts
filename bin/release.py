@@ -35,6 +35,7 @@ def get_latest_tag():
     except SystemExit:
         return None
 
+
 def suggest_next_version(release_type, latest_tag):
     """Suggest the next version based on the latest tag and release type."""
     if latest_tag:
@@ -64,21 +65,21 @@ def main():
         print(f"🔎 Latest version: {latest_tag}")
     else:
         print("ℹ️  No existing tags found. Starting from initial version.")
-    
+
     # 2. Ask for release type
     while True:
         release_type = input("Enter release type (major/minor/patch): ").strip().lower()
         if release_type in ["major", "minor", "patch"]:
             break
         print("❌ Please enter 'major', 'minor', or 'patch'")
-    
+
     # 3. Suggest next version based on release type
     suggested = suggest_next_version(release_type, latest_tag)
-    version = input(f"Enter the new version [default: {suggested}]: ").strip()
+    version = input(f"Enter custom version [current chosen: {suggested}]: ").strip()
     if not version:
         version = suggested
 
-    # 2. Confirm
+    # 4. Confirm
     confirm = (
         input(f"You are about to tag version '{version}'. Proceed? (yes/no): ")
         .strip()
@@ -88,20 +89,20 @@ def main():
         print("🚫 Aborted.")
         sys.exit(0)
 
-    # 3. Generate changelog with git-cliff
+    # 5. Generate changelog with git-cliff
     print("📝 Generating changelog ...")
     run_cmd(f"git cliff --tag {version} -o CHANGELOG.md")
 
-    # 4. Commit updated changelog
+    # 6. Commit updated changelog
     print("📦 Committing changelog ...")
     run_cmd("git add CHANGELOG.md")
     run_cmd(f"git commit -m 'chore(release): update changelog for {version}'")
 
-    # 5. Create Git tag (AFTER changelog commit)
+    # 7. Create Git tag (AFTER changelog commit)
     print(f"🏷️  Creating tag {version} ...")
     run_cmd(f"git tag {version}")
 
-    # 6. Push tag + changelog
+    # 8. Push tag + changelog
     print("⬆️  Pushing changes ...")
     run_cmd("git push")
     run_cmd("git push --tags")
