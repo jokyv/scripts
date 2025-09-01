@@ -73,20 +73,18 @@ def main():
             break
         print("❌ Please enter 'major', 'minor', or 'patch'")
 
-    # 3. Suggest next version based on release type
-    suggested = suggest_next_version(release_type, latest_tag)
-    version = input(f"Enter custom version [current chosen: {suggested}]: ").strip()
-    if not version:
-        version = suggested
+    # 3. Get the suggested version based on release type
+    version = suggest_next_version(release_type, latest_tag)
+    print(f"📦 Next version: {version}")
 
     # 4. Confirm
     confirm = (
-        input(f"You are about to tag version '{version}'. Proceed? (yes/no): ")
+        input(f"Proceed with release '{version}'? (yes/no): ")
         .strip()
         .lower()
     )
     if confirm != "yes":
-        print("🚫 Aborted.")
+        print("🚫 Release aborted.")
         sys.exit(0)
 
     # 5. Generate changelog with git-cliff
