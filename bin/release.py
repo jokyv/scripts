@@ -78,11 +78,7 @@ def main():
     print(f"📦 Next version: {version}")
 
     # 4. Confirm
-    confirm = (
-        input(f"Proceed with release '{version}'? (yes/no): ")
-        .strip()
-        .lower()
-    )
+    confirm = input(f"Proceed with release '{version}'? (yes/no): ").strip().lower()
     if confirm != "yes":
         print("🚫 Release aborted.")
         sys.exit(0)
