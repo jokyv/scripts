@@ -20,7 +20,7 @@ def change_to_repo_root():
             ["git", "rev-parse", "--show-toplevel"],
             check=True,
             text=True,
-            capture_output=True
+            capture_output=True,
         ).stdout.strip()
         os.chdir(repo_root)
     except subprocess.CalledProcessError as e:
@@ -129,7 +129,7 @@ def main():
     """
     # Ensure we're in the repository root
     change_to_repo_root()
-    
+
     # 1. Show latest tag
     latest_tag = get_latest_tag()
     if latest_tag:
