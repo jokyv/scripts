@@ -5,11 +5,27 @@ import sys
 import re
 import os
 
-repo_root = subprocess.run(
-    ["git", "rev-parse", "--show-toplevel"], check=True, text=True, capture_output=True
-).stdout.strip()
 
-os.chdir(repo_root)
+def change_to_repo_root():
+    """
+    Change the current working directory to the root of the git repository.
+
+    Raises
+    ------
+    SystemExit
+        If not in a git repository or if git command fails
+    """
+    try:
+        repo_root = subprocess.run(
+            ["git", "rev-parse", "--show-toplevel"],
+            check=True,
+            text=True,
+            capture_output=True
+        ).stdout.strip()
+        os.chdir(repo_root)
+    except subprocess.CalledProcessError as e:
+        print("❌ Not in a git repository or git command failed")
+        sys.exit(1)
 
 
 def run_cmd(cmd, capture_output=False):
@@ -110,6 +126,9 @@ def main():
     Guides the user through creating a new semantic version release,
     generating a changelog, and pushing the changes to the repository.
     """
+    # Ensure we're in the repository root
+    change_to_repo_root()
+    
     # 1. Show latest tag
     latest_tag = get_latest_tag()
     if latest_tag:
