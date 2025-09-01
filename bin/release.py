@@ -35,11 +35,9 @@ def get_latest_tag():
     except SystemExit:
         return None
 
-def suggest_next_version(release_type):
+def suggest_next_version(release_type, latest_tag):
     """Suggest the next version based on the latest tag and release type."""
-    latest_tag = get_latest_tag()
     if latest_tag:
-        print(f"🔎 Latest version found: {latest_tag}")
         match = re.match(r"v?(\d+)\.(\d+)\.(\d+)", latest_tag)
         if match:
             major, minor, patch = map(int, match.groups())
@@ -75,7 +73,7 @@ def main():
         print("❌ Please enter 'major', 'minor', or 'patch'")
     
     # 3. Suggest next version based on release type
-    suggested = suggest_next_version(release_type)
+    suggested = suggest_next_version(release_type, latest_tag)
     version = input(f"Enter the new version [default: {suggested}]: ").strip()
     if not version:
         version = suggested
