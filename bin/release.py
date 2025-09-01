@@ -24,7 +24,7 @@ def change_to_repo_root():
         ).stdout.strip()
         os.chdir(repo_root)
     except subprocess.CalledProcessError as e:
-        print("❌ Not in a git repository or git command failed")
+        print(f"❌ Not in a git repository or git command failed: {e}")
         sys.exit(1)
 
 
@@ -58,7 +58,7 @@ def run_cmd(cmd, capture_output=False):
         else:
             subprocess.run(cmd, shell=True, check=True)
     except subprocess.CalledProcessError as e:
-        print(f"❌ Command failed: {cmd}\n{e}")
+        print(f"❌ Command '{cmd}' failed with exit code {e.returncode}: {e.stderr}")
         sys.exit(1)
 
 
@@ -74,7 +74,8 @@ def get_latest_tag():
     try:
         latest_tag = run_cmd("git describe --tags --abbrev=0", capture_output=True)
         return latest_tag
-    except SystemExit:
+    except SystemExit as e:
+        print(f"❌ Failed to get latest tag: {e}")
         return None
 
 
