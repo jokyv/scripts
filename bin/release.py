@@ -13,7 +13,26 @@ os.chdir(repo_root)
 
 
 def run_cmd(cmd, capture_output=False):
-    """Run a shell command and optionally capture output."""
+    """
+    Run a shell command and optionally capture output.
+
+    Parameters
+    ----------
+    cmd : str
+        The command to execute
+    capture_output : bool, optional
+        Whether to capture and return the output, by default False
+
+    Returns
+    -------
+    str or None
+        The command output if capture_output is True, otherwise None
+
+    Raises
+    ------
+    SystemExit
+        If the command fails to execute successfully
+    """
     try:
         if capture_output:
             result = subprocess.run(
@@ -28,7 +47,14 @@ def run_cmd(cmd, capture_output=False):
 
 
 def get_latest_tag():
-    """Get the latest git tag."""
+    """
+    Get the latest git tag from the repository.
+
+    Returns
+    -------
+    str or None
+        The latest tag name, or None if no tags exist or an error occurs
+    """
     try:
         latest_tag = run_cmd("git describe --tags --abbrev=0", capture_output=True)
         return latest_tag
@@ -37,7 +63,26 @@ def get_latest_tag():
 
 
 def suggest_next_version(release_type, latest_tag):
-    """Suggest the next version based on the latest tag and release type."""
+    """
+    Suggest the next semantic version based on the release type and latest tag.
+
+    Parameters
+    ----------
+    release_type : str
+        Type of release: 'major', 'minor', or 'patch'
+    latest_tag : str or None
+        The latest version tag from the repository
+
+    Returns
+    -------
+    str
+        The suggested next version in 'vX.Y.Z' format
+
+    Notes
+    -----
+    If no previous tags exist, defaults to v1.0.0 for major, v0.1.0 for minor,
+    and v0.0.1 for patch releases
+    """
     if latest_tag:
         match = re.match(r"v?(\d+)\.(\d+)\.(\d+)", latest_tag)
         if match:
@@ -59,6 +104,12 @@ def suggest_next_version(release_type, latest_tag):
 
 
 def main():
+    """
+    Main function to manage the release process.
+
+    Guides the user through creating a new semantic version release,
+    generating a changelog, and pushing the changes to the repository.
+    """
     # 1. Show latest tag
     latest_tag = get_latest_tag()
     if latest_tag:
