@@ -1,3 +1,32 @@
+## [0.5.0] - 2025-10-06
+
+### 🚀 Features
+
+- Add interactive release type selection
+- Add script to check input update dates
+
+### 🐛 Bug Fixes
+
+- Improve error messages with exception details
+
+### 🚜 Refactor
+
+- Remove duplicate version print in suggest_next_version
+- Improve release script prompts and numbering
+- Simplify version selection in release script
+- Move repo root setup into function called from main
+
+### 📚 Documentation
+
+- Update function docstrings to numpy style
+
+### 🎨 Styling
+
+- Simplify release confirmation prompt formatting
+
+### ⚙️ Miscellaneous Tasks
+
+- Standardize subprocess call formatting
 ## [0.4.0] - 2025-08-31
 
 ### 🚀 Features
@@ -45,6 +74,7 @@
 - Move launch script to archived_scripts
 - *(release)* Update changelog for v0.4.0
 - Set git repo root as working directory in release script
+- *(release)* Update changelog for v0.4.0
 ## [0.3.0] - 2025-04-13
 
 ### 🚀 Features
