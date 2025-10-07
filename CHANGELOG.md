@@ -27,11 +27,12 @@
 ### ⚙️ Miscellaneous Tasks
 
 - Standardize subprocess call formatting
+
 ## [0.4.0] - 2025-08-31
 
 ### 🚀 Features
 
-- *(git)* Add script to generate commit messages with AI
+- _(git)_ Add script to generate commit messages with AI
 - Warn about uncommitted changes in shutdown
 - Add shutdown notifications
 - Enable actual system shutdown in logout script
@@ -72,14 +73,15 @@
 - Remove unused apps and scripts, update bookmarks script
 - Make app_launch.py executable
 - Move launch script to archived_scripts
-- *(release)* Update changelog for v0.4.0
+- _(release)_ Update changelog for v0.4.0
 - Set git repo root as working directory in release script
-- *(release)* Update changelog for v0.4.0
+- _(release)_ Update changelog for v0.4.0
+
 ## [0.3.0] - 2025-04-13
 
 ### 🚀 Features
 
-- *(python_profject_template)* Added more notes to remember
+- _(python_profject_template)_ Added more notes to remember
 - Add calculator and stopwatch apps with dark theme using ttkbootstrap
 - Add function to create and push a GitHub repository.
 
@@ -90,45 +92,47 @@
 ### 📚 Documentation
 
 - Restructure README with improved script organization and documentation
+
 ## [0.2.0] - 2025-02-05
 
 ### 🚀 Features
 
-- *(define_word.sh)* Sample script of checking a word's meaning
-- *(weather)* Sample code for wttr.in
-- *(linux_util.py)* Add parameter `weather`
-- *(define_word.sh)* Changed parameter for `notify-send`
-- *(clip_hist.sh)* Add script to manage clipboard history
-- *(my_logout.sh)* Add uptime to the script
-- *(clip_hist.sh)* Archiving this bash script
-- *(clip_hist)* Re-creating the script in python
-- *(git_util.py)* Small wording change
-- *(git_util.py)* Small wording change
+- _(define_word.sh)_ Sample script of checking a word's meaning
+- _(weather)_ Sample code for wttr.in
+- _(linux_util.py)_ Add parameter `weather`
+- _(define_word.sh)_ Changed parameter for `notify-send`
+- _(clip_hist.sh)_ Add script to manage clipboard history
+- _(my_logout.sh)_ Add uptime to the script
+- _(clip_hist.sh)_ Archiving this bash script
+- _(clip_hist)_ Re-creating the script in python
+- _(git_util.py)_ Small wording change
+- _(git_util.py)_ Small wording change
 - Add delete command to clip_hist.py
-- *(.gitignore)* Update files for .gitignore
+- _(.gitignore)_ Update files for .gitignore
 - Add large file check to auto_commit function
 
 ### 🐛 Bug Fixes
 
-- *(my_logout.sh)* Removed the sudo does not need it
-- *(python_code_init.py)* Fix the path of the template
-- *(git_util.py)* Fd command is now fixed
-- *(git_util.py)* Too many empty lines when print, removing some
+- _(my_logout.sh)_ Removed the sudo does not need it
+- _(python_code_init.py)_ Fix the path of the template
+- _(git_util.py)_ Fd command is now fixed
+- _(git_util.py)_ Too many empty lines when print, removing some
 
 ### 🚜 Refactor
 
-- *(python_pip_update.py)* Grouping libraries depending of their usage
-- *(clip_hist.py)* Linting
+- _(python_pip_update.py)_ Grouping libraries depending of their usage
+- _(clip_hist.py)_ Linting
 
 ### 📚 Documentation
 
-- *(CHANGELOG.md)* Updated changelog file
+- _(CHANGELOG.md)_ Updated changelog file
+
 ## [0.1.0] - 2024-12-27
 
 ### 🚀 Features
 
-- *(util)* Add dprint and typos configs
+- _(util)_ Add dprint and typos configs
 
 ### 📚 Documentation
 
-- *(README.md)* Update docs
+- _(README.md)_ Update docs
