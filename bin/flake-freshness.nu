@@ -1,8 +1,6 @@
 #!/usr/bin/env nu
 # flake-freshness.nu: Monitor package versions across nixpkgs inputs
 #
-# Author: Jimmy Forrester-Fellowes (2025)
-#
 # A Nushell script for tracking package versions across your flake's specialized
 # nixpkgs inputs. Compares installed versions against latest available versions
 # and highlights which inputs need updating.
