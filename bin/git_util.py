@@ -7,8 +7,8 @@
 import argparse
 import os
 import subprocess
-from datetime import datetime
 import sys
+from datetime import datetime
 
 import python_sops as ps
 from messaging import display_message as dm
@@ -20,18 +20,7 @@ from rich.console import Console
 
 HOME = os.path.expanduser("~")
 PATHS = [f"{HOME}/{ps.get_secret('notes_path')}", f"{HOME}/pics/wallpapers/"]
-EXCLUDE_DIRS = [
-    "-gE",
-    ".local/share",
-    "-gE",
-    "helix/",
-    "-gE",
-    ".pyenv",
-    "-gE",
-    ".cache/",
-    "-gE",
-    ".cargo/",
-]
+EXCLUDE_DIRS = ["-gE", ".local/share", "-gE", "helix/", "-gE", ".pyenv", "-gE", ".cache/", "-gE", ".cargo/"]
 FILE_SIZE_LIMIT = 50  # in MB
 # init rich console
 console = Console()
@@ -76,26 +65,18 @@ def auto_commit(paths: list[str]) -> None:
         ).stdout.splitlines()
 
         if big_files:
-            dm(
-                "WARNING",
-                f"Files larger than {FILE_SIZE_LIMIT}MB detected, skipping commit",
-            )
+            dm("WARNING", f"Files larger than {FILE_SIZE_LIMIT}MB detected, skipping commit")
             for file in big_files:
                 dm("WARNING", f"Large file: {file}")
             # skip to the next path
             continue
         else:
-            dm(
-                "SUCCESS",
-                f"No Files larger than {FILE_SIZE_LIMIT}MB found. Continuing...",
-            )
+            dm("SUCCESS", f"No Files larger than {FILE_SIZE_LIMIT}MB found. Continuing...")
 
         dm("CHECKING", f"If any changes for repo: {path}")
 
         # Run git status to check for changes
-        git_status_process = subprocess.run(
-            ["git", "status", "--porcelain"], capture_output=True, cwd=path, text=True
-        )
+        git_status_process = subprocess.run(["git", "status", "--porcelain"], capture_output=True, cwd=path, text=True)
         changes_exist = len(git_status_process.stdout.splitlines())
 
         # if no changes then exit with code 0
@@ -104,9 +85,7 @@ def auto_commit(paths: list[str]) -> None:
             console.print("")
         else:
             subprocess.run(["git", "add", "."], cwd=path)
-            commit_message = (
-                f"auto script backup at: {datetime.now().strftime('%d-%m-%Y %H:%M:%S')}"
-            )
+            commit_message = f"auto script backup at: {datetime.now().strftime('%d-%m-%Y %H:%M:%S')}"
             subprocess.run(["git", "commit", "-q", "-m", commit_message], cwd=path)
             subprocess.run(["git", "push", "-q"], cwd=path)
             dm("SUCCESS", "Found changes!")
@@ -135,15 +114,11 @@ def commit_workflow(commit_message):
 
     dm("CHECKING", f"if any file above {FILE_SIZE_LIMIT} MB exist")
     # Get the path to the git folder
-    dir_path = subprocess.run(
-        ["git", "rev-parse", "--show-toplevel"], capture_output=True, text=True
-    ).stdout.strip()
+    dir_path = subprocess.run(["git", "rev-parse", "--show-toplevel"], capture_output=True, text=True).stdout.strip()
 
     # Check if big files exist before committing
     big_files = subprocess.run(
-        ["fd", "-H", ".", dir_path, "--size", f"+{FILE_SIZE_LIMIT}MB", "-gE", ".git"],
-        capture_output=True,
-        text=True,
+        ["fd", "-H", ".", dir_path, "--size", f"+{FILE_SIZE_LIMIT}MB", "-gE", ".git"], capture_output=True, text=True
     ).stdout.splitlines()
     if big_files:
         dm("WARNING", "file(s) bigger than 50MB exist..")
@@ -231,9 +206,7 @@ def pull_all_git_dirs() -> None:
     # Use fd to find directories with .git
     # but exclude dirs with names nvim or .local/share
     git_dirs = subprocess.run(
-        ["fd", "-td", "-HI", "-g", ".git", *EXCLUDE_DIRS],
-        capture_output=True,
-        text=True,
+        ["fd", "-td", "-HI", "-g", ".git", *EXCLUDE_DIRS], capture_output=True, text=True
     ).stdout.splitlines()
 
     # Iterate through found git directories
@@ -266,9 +239,7 @@ def push_all_git_dirs() -> None:
     # Use fd to find directories with .git
     # but exclude dirs as defined by exclude_dirs variable
     git_dirs = subprocess.run(
-        ["fd", "-td", "-HI", "-g", ".git", *EXCLUDE_DIRS],
-        capture_output=True,
-        text=True,
+        ["fd", "-td", "-HI", "-g", ".git", *EXCLUDE_DIRS], capture_output=True, text=True
     ).stdout.splitlines()
 
     # Iterate through found git directories
@@ -277,9 +248,7 @@ def push_all_git_dirs() -> None:
 
         # Move up one directory level
         os.chdir("..")
-        git_status_process = subprocess.run(
-            ["git", "status", "-s"], capture_output=True, text=True
-        )
+        git_status_process = subprocess.run(["git", "status", "-s"], capture_output=True, text=True)
         git_status = len(git_status_process.stdout.splitlines())
 
         if git_status > 0:
@@ -309,9 +278,7 @@ def status_all_git_dirs() -> bool:
     # Use fd to find directories with .git
     # but exclude dirs with names .cache, .local/share, or cargo
     git_dirs = subprocess.run(
-        ["fd", "-td", "-HI", "-g", ".git", *EXCLUDE_DIRS],
-        capture_output=True,
-        text=True,
+        ["fd", "-td", "-HI", "-g", ".git", *EXCLUDE_DIRS], capture_output=True, text=True
     ).stdout.splitlines()
 
     changes_exist = False
@@ -321,9 +288,7 @@ def status_all_git_dirs() -> bool:
         os.chdir(git_dir)
         # Move up one directory level
         os.chdir("..")
-        git_status_process = subprocess.run(
-            ["git", "status", "-s"], capture_output=True, text=True
-        )
+        git_status_process = subprocess.run(["git", "status", "-s"], capture_output=True, text=True)
         git_status = len(git_status_process.stdout.splitlines())
         if git_status > 0:
             console.print("")
@@ -398,9 +363,7 @@ def create_and_push_gh_repo(repo_dir="."):
         # Step 2: Push the current branch
         current_step = "git push"
         print(f"Running in '{os.path.abspath(repo_dir)}': {' '.join(commands[1])}")
-        result_push = subprocess.run(
-            commands[1], check=True, capture_output=True, text=True, cwd=repo_dir
-        )
+        result_push = subprocess.run(commands[1], check=True, capture_output=True, text=True, cwd=repo_dir)
         print(f"Success: {current_step}")
         if result_push.stdout:
             print(f"Output:\n{result_push.stdout.strip()}")
@@ -411,27 +374,17 @@ def create_and_push_gh_repo(repo_dir="."):
         current_step = "gh browse"
         print(f"Running in '{os.path.abspath(repo_dir)}': {' '.join(commands[2])}")
         # Browse usually doesn't output much, but capture anyway
-        result_browse = subprocess.run(
-            commands[2], check=True, capture_output=True, text=True, cwd=repo_dir
-        )
+        result_browse = subprocess.run(commands[2], check=True, capture_output=True, text=True, cwd=repo_dir)
         print(f"Success: {current_step}")
-        if (
-            result_browse.stderr
-        ):  # Often gh browse prints the URL it's opening to stderr
+        if result_browse.stderr:  # Often gh browse prints the URL it's opening to stderr
             print(f"Info/Warnings:\n{result_browse.stderr.strip()}", file=sys.stderr)
 
         print("\nAll steps completed successfully.")
         return True
 
     except FileNotFoundError as e:
-        print(
-            f"\nError: Command '{e.filename}' not found during step '{current_step}'.",
-            file=sys.stderr,
-        )
-        print(
-            "Please ensure 'gh' and 'git' are installed and in your system's PATH.",
-            file=sys.stderr,
-        )
+        print(f"\nError: Command '{e.filename}' not found during step '{current_step}'.", file=sys.stderr)
+        print("Please ensure 'gh' and 'git' are installed and in your system's PATH.", file=sys.stderr)
         return False
     except subprocess.CalledProcessError as e:
         print(f"\nError: Command failed during step '{current_step}'.", file=sys.stderr)
@@ -443,10 +396,7 @@ def create_and_push_gh_repo(repo_dir="."):
             print(f"stderr:\n{e.stderr.strip()}", file=sys.stderr)
         return False
     except Exception as e:
-        print(
-            f"\nAn unexpected error occurred during step '{current_step}': {e}",
-            file=sys.stderr,
-        )
+        print(f"\nAn unexpected error occurred during step '{current_step}': {e}", file=sys.stderr)
         return False
 
 
@@ -455,9 +405,7 @@ def create_and_push_gh_repo(repo_dir="."):
 # -----------------------------------------------
 
 if __name__ == "__main__":
-    parser = argparse.ArgumentParser(
-        prog="GIT Utility", description="Utility CLI for GIT custom commands"
-    )
+    parser = argparse.ArgumentParser(prog="GIT Utility", description="Utility CLI for GIT custom commands")
 
     parser.add_argument("-cw", "--commit_workflow", action="store_true")
     parser.add_argument("-ac", "--auto_commit", action="store_true")
