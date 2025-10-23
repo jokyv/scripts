@@ -32,11 +32,6 @@ logging.basicConfig(
 # Create logger instance
 logger = logging.getLogger("rich")
 
-# Keep these for backward compatibility
-LEVEL: str = "info"
-MESSAGE: str = "you did it!"
-CUSTOM_THEME = Theme({"warning": "red", "info": "magenta", "success": "green", "failure": "red", "checking": "yellow"})
-
 # -----------------------------------------------
 # FUNCTIONS
 # -----------------------------------------------
@@ -49,7 +44,7 @@ def display_message(level: str, message: str) -> None:
     Parameters
     ----------
     level : str
-        The level of the message (warning, info, success, failure, check).
+        The level of the message (warning, info, success, failure, checking).
     message : str
         The message to display.
 
@@ -80,7 +75,7 @@ def display_message(level: str, message: str) -> None:
 
     if level_lower not in level_mapping:
         valid_levels = ["warning", "info", "success", "failure", "checking"]
-        raise ValueError(f"Invalid level: {level}. Valid options: {valid_levels}")
+        raise ValueError(f"Invalid level: {level_lower}. Valid options: {valid_levels}")
 
     # Log with appropriate level
     if level_lower == "success":
