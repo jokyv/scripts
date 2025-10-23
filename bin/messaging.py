@@ -19,7 +19,13 @@ logging.basicConfig(
     level=logging.INFO,
     format="%(message)s",
     datefmt="[%X]",
-    handlers=[RichHandler(rich_tracebacks=True, markup=True)]
+    handlers=[RichHandler(
+        rich_tracebacks=True,
+        markup=True,
+        show_time=True,      # Keep timestamp
+        show_level=True,     # Keep level display  
+        show_path=False      # Disable only file path
+    )]
 )
 
 # Create logger instance
