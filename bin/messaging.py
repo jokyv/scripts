@@ -4,14 +4,28 @@
 # LIBRARIES
 # -----------------------------------------------
 
+import logging
 from rich.console import Console
 from rich.errors import MissingStyle
+from rich.logging import RichHandler
 from rich.theme import Theme
 
 # -----------------------------------------------
-# VARIABLES
+# LOGGING CONFIGURATION
 # -----------------------------------------------
 
+# Configure logging with Rich handler
+logging.basicConfig(
+    level=logging.INFO,
+    format="%(message)s",
+    datefmt="[%X]",
+    handlers=[RichHandler(rich_tracebacks=True, markup=True)]
+)
+
+# Create logger instance
+logger = logging.getLogger("rich")
+
+# Keep these for backward compatibility
 LEVEL: str = "info"
 MESSAGE: str = "you did it!"
 CUSTOM_THEME = Theme(
@@ -51,22 +65,31 @@ def display_message(level: str, message: str) -> None:
     display_message("info", "Checking something...")
     display_message("success", "Task completed successfully!")
     display_message("failure", "Task failed!")
-    display_message("checking", "for updates")
+    display_message("checking", "Checking for updates")
 
     """
     level_lower = level.lower()
-    match level_lower:
-        case "warning" | "info" | "success" | "failure" | "checking":
-            pass
-        case _:
-            valid_levels = ["warning", "info", "success", "failure", "checking"]
-            raise ValueError(f"Invalid level: {level}. Valid options: {valid_levels}")
+    
+    # Map custom levels to logging levels
+    level_mapping = {
+        "warning": logging.WARNING,
+        "info": logging.INFO,
+        "success": logging.INFO,  # Use INFO for success with custom styling
+        "failure": logging.ERROR,
+        "checking": logging.INFO   # Use INFO for checking with custom styling
+    }
+    
+    if level_lower not in level_mapping:
+        valid_levels = ["warning", "info", "success", "failure", "checking"]
+        raise ValueError(f"Invalid level: {level}. Valid options: {valid_levels}")
 
-    console = Console(theme=CUSTOM_THEME)
-    try:
-        console.print(f"[bold]:: {level}[/bold] -", message, style=level_lower)
-    except MissingStyle:
-        console.print("[bold red]:: Error! - wrong color for rich library[/bold red]")
+    # Log with appropriate level
+    if level_lower == "success":
+        logger.info(f"[green]✓ {message}[/green]")
+    elif level_lower == "checking":
+        logger.info(f"[yellow]⟳ {message}[/yellow]")
+    else:
+        logger.log(level_mapping[level_lower], message)
 
 
 # -----------------------------------------------
@@ -75,7 +98,12 @@ def display_message(level: str, message: str) -> None:
 
 
 def main() -> None:
-    display_message(LEVEL, MESSAGE)
+    # Test all message levels
+    display_message("info", "This is an info message")
+    display_message("warning", "This is a warning message")
+    display_message("success", "Task completed successfully!")
+    display_message("failure", "Task failed!")
+    display_message("checking", "Checking for updates")
 
 
 if __name__ == "__main__":
