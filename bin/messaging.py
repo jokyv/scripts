@@ -56,6 +56,7 @@ MESSAGE_THEMES = {
     "info": {"icon": "ℹ", "color": "blue", "style": "bold blue"}, 
     "success": {"icon": "✓", "color": "green", "style": "bold green"},
     "failure": {"icon": "✗", "color": "red", "style": "bold red"},
+    "error": {"icon": "✗", "color": "red", "style": "bold red"},  # Alias for failure
     "checking": {"icon": "⟳", "color": "yellow", "style": "bold yellow"},
     "debug": {"icon": "🐛", "color": "magenta", "style": "bold magenta"},
     "question": {"icon": "?", "color": "cyan", "style": "bold cyan"},
