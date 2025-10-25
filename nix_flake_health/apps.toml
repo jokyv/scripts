@@ -1,0 +1,12 @@
+[packages]
+packages = [
+  "aider-chat",
+  "firefox",
+  "helix",
+  # "python314",
+  "python313",
+  "foot",
+  "yazi",
+  "zoxide",
+  "niri",
+]
