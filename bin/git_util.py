@@ -11,7 +11,7 @@ import sys
 from datetime import datetime
 
 import python_sops as ps
-from messaging import display_message as dm
+from messaging import display_message
 from rich.console import Console
 
 # -----------------------------------------------
@@ -49,12 +49,12 @@ def auto_commit(paths: list[str]) -> None:
         # console.print("")
         console.rule("[bold red]Repository checks")
         if not os.path.exists(path):
-            dm("FAILURE", f"Path: {path} does not exist.")
+            display_message("failure", f"Path: {path} does not exist.")
             # skip to the next path
             continue
 
         # Check for files over size limit
-        dm("CHECKING", f"Checking large files (>{FILE_SIZE_LIMIT}MB) in repo: {path}")
+        display_message("checking", f"Checking large files (>{FILE_SIZE_LIMIT}MB) in repo: {path}")
         big_files = subprocess.run(
             # search including hidden files, above 50MB excluding .git dir
             # fd -H --size +MB -gE .git
@@ -65,15 +65,15 @@ def auto_commit(paths: list[str]) -> None:
         ).stdout.splitlines()
 
         if big_files:
-            dm("WARNING", f"Files larger than {FILE_SIZE_LIMIT}MB detected, skipping commit")
+            display_message("warning", f"Files larger than {FILE_SIZE_LIMIT}MB detected, skipping commit")
             for file in big_files:
-                dm("WARNING", f"Large file: {file}")
+                display_message("warning", f"Large file: {file}")
             # skip to the next path
             continue
         else:
-            dm("SUCCESS", f"No Files larger than {FILE_SIZE_LIMIT}MB found. Continuing...")
+            display_message("success", f"No Files larger than {FILE_SIZE_LIMIT}MB found. Continuing...")
 
-        dm("CHECKING", f"If any changes for repo: {path}")
+        display_message("checking", f"If any changes for repo: {path}")
 
         # Run git status to check for changes
         git_status_process = subprocess.run(["git", "status", "--porcelain"], capture_output=True, cwd=path, text=True)
@@ -81,15 +81,15 @@ def auto_commit(paths: list[str]) -> None:
 
         # if no changes then exit with code 0
         if changes_exist == 0:
-            dm("SUCCESS", "Nothing to commit, moving on!")
+            display_message("success", "Nothing to commit, moving on!")
             console.print("")
         else:
             subprocess.run(["git", "add", "."], cwd=path)
             commit_message = f"auto script backup at: {datetime.now().strftime('%d-%m-%Y %H:%M:%S')}"
             subprocess.run(["git", "commit", "-q", "-m", commit_message], cwd=path)
             subprocess.run(["git", "push", "-q"], cwd=path)
-            dm("SUCCESS", "Found changes!")
-            dm("SUCCESS", "git add, git commit and git push performed")
+            display_message("success", "Found changes!")
+            display_message("success", "git add, git commit and git push performed")
             console.print("")
 
 
@@ -107,12 +107,12 @@ def clean_up() -> None:
 def commit_workflow(commit_message):
     # WARNING removing git pull and git stash as i am using git push rebase now
     # Git stash, pull, and apply
-    # dm("INFO", "git pull and git stash apply")
+    # display_message("info", "git pull and git stash apply")
     # subprocess.run(["git", "stash", "--include-untracked"])
     # subprocess.run(["git", "pull", "-q"])
     # subprocess.run(["git", "stash", "apply", "-q"])
 
-    dm("CHECKING", f"if any file above {FILE_SIZE_LIMIT} MB exist")
+    display_message("checking", f"if any file above {FILE_SIZE_LIMIT} MB exist")
     # Get the path to the git folder
     dir_path = subprocess.run(["git", "rev-parse", "--show-toplevel"], capture_output=True, text=True).stdout.strip()
 
@@ -121,14 +121,14 @@ def commit_workflow(commit_message):
         ["fd", "-H", ".", dir_path, "--size", f"+{FILE_SIZE_LIMIT}MB", "-gE", ".git"], capture_output=True, text=True
     ).stdout.splitlines()
     if big_files:
-        dm("WARNING", "file(s) bigger than 50MB exist..")
-        dm("WARNING", "delete or ignore the below file(s):")
+        display_message("warning", "file(s) bigger than 50MB exist..")
+        display_message("warning", "delete or ignore the below file(s):")
         for file in big_files:
             print(file)
         return
 
-    dm("SUCCESS", "no big files found!")
-    dm("INFO", "proceeding with git add, commit, and push")
+    display_message("success", "no big files found!")
+    display_message("info", "proceeding with git add, commit, and push")
 
     # Git add everything
     subprocess.run(["git", "add", "-A"])
@@ -138,7 +138,7 @@ def commit_workflow(commit_message):
     subprocess.run(["git", "push", "-q"])
 
     # Check git status
-    dm("INFO", "below is the current git status of the repo")
+    display_message("info", "below is the current git status of the repo")
     subprocess.run(["git", "status", "-sb"])
 
 
@@ -218,7 +218,7 @@ def pull_all_git_dirs() -> None:
         # Move up one directory level
         os.chdir("..")
 
-        dm("CHECKING", f"Anything to pull for repo: {git_dir}")
+        display_message("checking", f"Anything to pull for repo: {git_dir}")
         subprocess.run(["git", "pull"])
 
 
@@ -254,14 +254,14 @@ def push_all_git_dirs() -> None:
         if git_status > 0:
             # messaging
             console.print("")
-            dm("WARNING", f"{git_dir} repo needs a git commit")
+            display_message("warning", f"{git_dir} repo needs a git commit")
 
             # Run git add, commit and push
             commit_message = "This is an auto generated git commit!"
             subprocess.run(["git", "add", "."])
             subprocess.run(["git", "commit", "-qm", commit_message])
             subprocess.run(["git", "push", "-q"])
-            dm("SUCCESS", "git auto commit was pushed!")
+            display_message("success", "git auto commit was pushed!")
 
 
 def status_all_git_dirs() -> bool:
@@ -292,7 +292,7 @@ def status_all_git_dirs() -> bool:
         git_status = len(git_status_process.stdout.splitlines())
         if git_status > 0:
             console.print("")
-            dm("WARNING", f"{git_dir} repo needs a git commit")
+            display_message("warning", f"{git_dir} repo needs a git commit")
             subprocess.run(["git", "status", "-sb"])
             changes_exist = True
         # return to HOME
