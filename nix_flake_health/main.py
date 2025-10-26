@@ -25,6 +25,7 @@ from rich.table import Table
 # ===============================================
 
 DEFAULT_FLAKE_PATH = "flake.nix"
+CACHE_TTL_HOURS = 1  # Cache time-to-live in hours
 
 # ===============================================
 # Configuration & Constants
@@ -64,7 +65,7 @@ class Config:
                 "reset": "\033[0m",
             }
         if self.cache is None:
-            self.cache = {"ttl": 3600}  # 1 hour in seconds
+            self.cache = {"ttl": CACHE_TTL_HOURS * 3600}  # Convert hours to seconds
         if self.defaults is None:
             self.defaults = {"flake": "flake.nix"}
 
