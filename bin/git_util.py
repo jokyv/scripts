@@ -670,6 +670,9 @@ def _display_status_summary(results: List[dict]) -> None:
     if not results:
         return
 
+    # Sort results to show changes first
+    results.sort(key=lambda x: x["status"] == "clean")
+
     console.print("\n")
     table = Table(show_header=True, header_style="bold cyan")
     table.add_column("Repository", style="dim", width=50)
