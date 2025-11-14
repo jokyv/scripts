@@ -8,7 +8,7 @@
 WALLPAPERS_DIR="$HOME/pics/wallpapers"
 
 # Time interval in seconds for the loop (e.g., 60*60 for 1 hour, 30*60 for 30 mins).
-LOOP_INTERVAL=$((60 * 60))
+LOOP_INTERVAL=$((15 * 60))
 
 # -----------------------------------------------
 # FUNCTIONS
@@ -90,11 +90,12 @@ case "$1" in
     --loop-daemon)
         # This is the background process started by `toggle_loop`.
         run_loop
-        ;;n    *)
+        ;;
+    *)
         # Default action: change wallpaper once.
-        # This allows passing a directory as an argument, e.g., `./update_wall.sh /path/to/other/pics`
+        # This allows passing a directory as an argument, e.g., ./update_wall.sh /path/to/other/pics
         change_wallpaper "$1"
-        ;;n
+        ;;
 esac
 
 exit 0
