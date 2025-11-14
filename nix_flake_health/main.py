@@ -526,9 +526,9 @@ def print_table(results: List[Dict], revision_age: str) -> None:
         # Format current version with appropriate color
         current_version = f"[{current_style}]{row['current']}[/{current_style}]"
         
-        # Format latest version - make it green for outdated packages
+        # Format latest version - use same color as current for outdated packages
         if row["status"] == "outdated":
-            latest_version = f"[green]{row['latest']}[/green]"
+            latest_version = f"[{current_style}]{row['latest']}[/{current_style}]"
         else:
             latest_version = row["latest"]
 
