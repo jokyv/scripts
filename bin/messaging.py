@@ -4,18 +4,21 @@
 # LIBRARIES
 # -----------------------------------------------
 
-import logging
-import time
 import argparse
+import logging
+import os
+import time
 from datetime import datetime
+from logging.handlers import RotatingFileHandler
+from pathlib import Path
 
-from rich.logging import RichHandler
 from rich.console import Console
-from rich.panel import Panel
-from rich.text import Text
-from rich.spinner import Spinner
 from rich.live import Live
+from rich.logging import RichHandler
+from rich.panel import Panel
+from rich.spinner import Spinner
 from rich.table import Table
+from rich.text import Text
 
 # -----------------------------------------------
 # LOGGING CONFIGURATION
@@ -24,36 +27,51 @@ from rich.table import Table
 # Custom RichHandler that always shows timestamp
 class AlwaysShowTimeRichHandler(RichHandler):
     def emit(self, record):
-        # Force timestamp to be always shown by making it unique each time
         record.created = datetime.now().timestamp()
         super().emit(record)
 
-# Configure logging with custom Rich handler
-logging.basicConfig(
-    level=logging.INFO,
-    format="%(message)s",
-    datefmt="[%X]",
-    handlers=[
-        AlwaysShowTimeRichHandler(
-            rich_tracebacks=True,
-            markup=True,
-            show_time=True,  # Keep timestamp
-            show_level=True,  # Keep level display
-            show_path=False,  # Disable only file path
-        )
-    ],
+# Decide log file path: persistent under /var/log, else /tmp fallback
+LOG_FILE = "/var/log/my-app/app.log"
+try:
+    Path("/var/log/my-app").mkdir(parents=True, exist_ok=True)
+    Path(LOG_FILE).touch(exist_ok=True)
+except PermissionError:
+    LOG_FILE = "/tmp/app.log"
+    Path(LOG_FILE).touch(exist_ok=True)
+
+# Handlers: Rich console + rotating file
+console_handler = AlwaysShowTimeRichHandler(
+    rich_tracebacks=True,
+    markup=True,
+    show_time=True,
+    show_level=True,
+    show_path=False,
 )
 
+file_handler = RotatingFileHandler(
+    LOG_FILE,
+    maxBytes=5 * 1024 * 1024,  # 5 MB
+    backupCount=3,
+    encoding="utf-8",
+)
+file_handler.setLevel(logging.INFO)
+file_handler.setFormatter(logging.Formatter("%(asctime)s - %(levelname)s - %(message)s"))
+
+# Configure both handlers (force replaces any old config)
+logging.basicConfig(
+    level=logging.INFO,
+    handlers=[console_handler, file_handler],
+    force=True
+)
 # Create logger instance
 logger = logging.getLogger("rich")
-
 # Add console instance
 console = Console()
 
 # Enhanced message categories with icons and colors
 MESSAGE_THEMES = {
     "warning": {"icon": "⚠", "color": "red", "style": "bold red"},
-    "info": {"icon": "ℹ", "color": "blue", "style": "bold blue"}, 
+    "info": {"icon": "ℹ", "color": "blue", "style": "bold blue"},
     "success": {"icon": "✓", "color": "green", "style": "bold green"},
     "failure": {"icon": "✗", "color": "red", "style": "bold red"},
     "error": {"icon": "✗", "color": "red", "style": "bold red"},  # Alias for failure
@@ -62,6 +80,7 @@ MESSAGE_THEMES = {
     "question": {"icon": "?", "color": "cyan", "style": "bold cyan"},
     "star": {"icon": "⭐", "color": "yellow", "style": "bold yellow"},
 }
+
 
 # -----------------------------------------------
 # FUNCTIONS
