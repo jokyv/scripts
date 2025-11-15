@@ -4,28 +4,25 @@
 # LIBRARIES
 # -----------------------------------------------
 
-import logging
-from logging.handlers import RotatingFileHandler
-import time
 import argparse
+import logging
+import os
+import time
 from datetime import datetime
-
-from rich.logging import RichHandler
-from rich.console import Console
-from rich.panel import Panel
-from rich.text import Text
-from rich.spinner import Spinner
-from rich.live import Live
-from rich.table import Table
+from logging.handlers import RotatingFileHandler
 from pathlib import Path
+
+from rich.console import Console
+from rich.live import Live
+from rich.logging import RichHandler
+from rich.panel import Panel
+from rich.spinner import Spinner
+from rich.table import Table
+from rich.text import Text
 
 # -----------------------------------------------
 # LOGGING CONFIGURATION
 # -----------------------------------------------
-
-import os
-from pathlib import Path
-from logging.handlers import RotatingFileHandler
 
 # Custom RichHandler that always shows timestamp
 class AlwaysShowTimeRichHandler(RichHandler):
@@ -66,8 +63,9 @@ logging.basicConfig(
     handlers=[console_handler, file_handler],
     force=True
 )
-
+# Create logger instance
 logger = logging.getLogger("rich")
+# Add console instance
 console = Console()
 
 # Enhanced message categories with icons and colors
