@@ -24,14 +24,12 @@ LIBRARIES_TO_UPDATE = [
     "altair",
     "hvplot",
     "panel",
-
     # linting & formating & data hints
     "mypy",
     "pylsp-mypy",  # plugin for mypy
     "python-lsp-server",
     "ruff",
     "ty",
-
     # scientific computing
     "ipython",
     "numpy",
@@ -39,11 +37,9 @@ LIBRARIES_TO_UPDATE = [
     "polars",
     "pyarrow",
     "pydantic",
-
     # web development
     "fastapi",
     "uvicorn",
-
     # misc
     "pip",
     "requests",
@@ -75,15 +71,10 @@ def get_installed_packages() -> dict[str, str]:
     packages = {}
     try:
         # Use 'uv pip freeze' for a machine-readable output of installed packages
-        result = subprocess.run(
-            ["uv", "pip", "freeze"],
-            capture_output=True,
-            text=True,
-            check=True
-        )
-        for line in result.stdout.strip().split('\n'):
-            if '==' in line:
-                name, version = line.split('==', 1)
+        result = subprocess.run(["uv", "pip", "freeze"], capture_output=True, text=True, check=True)
+        for line in result.stdout.strip().split("\n"):
+            if "==" in line:
+                name, version = line.split("==", 1)
                 packages[name.strip()] = version.strip()
     except (subprocess.CalledProcessError, FileNotFoundError):
         dm("ERROR", "Could not retrieve package list. Is 'uv' installed and in your PATH?")
@@ -203,9 +194,7 @@ if __name__ == "__main__":
 
     parser = argparse.ArgumentParser(description="Update Python libraries.")
     parser.add_argument("-A", "--all", action="store_true", help="Update all libraries")
-    parser.add_argument(
-        "-S", "--selected", action="store_true", help="Update selected libraries"
-    )
+    parser.add_argument("-S", "--selected", action="store_true", help="Update selected libraries")
     args = parser.parse_args()
 
     if args.all:
