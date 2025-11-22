@@ -25,8 +25,9 @@ LIBRARIES_TO_UPDATE = [
     "hvplot",
     "panel",
     # linting & formating & data hints
-    "mypy",
-    "pylsp-mypy",  # plugin for mypy
+    # using ty now
+    # "mypy",
+    # "pylsp-mypy",  # plugin for mypy
     "python-lsp-server",
     "ruff",
     "ty",
