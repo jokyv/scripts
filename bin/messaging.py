@@ -7,6 +7,7 @@
 import argparse
 import logging
 import os
+import re
 import time
 from datetime import datetime
 from logging.handlers import RotatingFileHandler
@@ -24,11 +25,15 @@ from rich.text import Text
 # LOGGING CONFIGURATION
 # -----------------------------------------------
 
-# Custom RichHandler that always shows timestamp
-class AlwaysShowTimeRichHandler(RichHandler):
-    def emit(self, record):
-        record.created = datetime.now().timestamp()
-        super().emit(record)
+
+class MarkupStrippingFormatter(logging.Formatter):
+    """Custom formatter to strip rich markup for plain text logging."""
+
+    def format(self, record):
+        formatted_message = super().format(record)
+        # Strip rich markup like [bold blue]...[/]
+        return re.sub(r"\[[^\]]*\]", "", formatted_message)
+
 
 # Decide log file path: persistent under /var/log, else /tmp fallback
 LOG_FILE = "/var/log/my-app/app.log"
@@ -40,7 +45,7 @@ except PermissionError:
     Path(LOG_FILE).touch(exist_ok=True)
 
 # Handlers: Rich console + rotating file
-console_handler = AlwaysShowTimeRichHandler(
+console_handler = RichHandler(
     rich_tracebacks=True,
     markup=True,
     show_time=True,
@@ -55,14 +60,10 @@ file_handler = RotatingFileHandler(
     encoding="utf-8",
 )
 file_handler.setLevel(logging.INFO)
-file_handler.setFormatter(logging.Formatter("%(asctime)s - %(levelname)s - %(message)s"))
+file_handler.setFormatter(MarkupStrippingFormatter("%(asctime)s - %(levelname)s - %(message)s"))
 
 # Configure both handlers (force replaces any old config)
-logging.basicConfig(
-    level=logging.INFO,
-    handlers=[console_handler, file_handler],
-    force=True
-)
+logging.basicConfig(level=logging.INFO, format="%(message)s", handlers=[console_handler, file_handler], force=True)
 # Create logger instance
 logger = logging.getLogger("rich")
 # Add console instance
@@ -90,7 +91,7 @@ MESSAGE_THEMES = {
 def display_message(level: str, message: str, title: str = None, panel_style: bool = False) -> None:
     """
     Display a message with rich formatting, icons, and optional panels.
-    
+
     Parameters
     ----------
     level : str
@@ -103,24 +104,24 @@ def display_message(level: str, message: str, title: str = None, panel_style: bo
         Whether to display in a rich panel
     """
     level_lower = level.lower()
-    
+
     if level_lower not in MESSAGE_THEMES:
         valid_levels = list(MESSAGE_THEMES.keys())
         raise ValueError(f"Invalid level: {level_lower}. Valid options: {valid_levels}")
-    
+
     theme = MESSAGE_THEMES[level_lower]
     icon_text = f"{theme['icon']} "
-    
+
     if panel_style:
         # Create a beautiful panel
         panel_title = title or level_lower.upper()
         styled_message = Text.from_markup(f"[{theme['color']}]{icon_text}{message}[/]")
-        
+
         console.print(
             Panel(
                 styled_message,
                 title=f"[bold {theme['color']}]{panel_title}[/]",
-                border_style=theme['color'],
+                border_style=theme["color"],
                 padding=(1, 2),
             )
         )
@@ -132,7 +133,7 @@ def display_message(level: str, message: str, title: str = None, panel_style: bo
 def display_progress(message: str, duration: float = 2.0) -> None:
     """
     Show an animated progress spinner.
-    
+
     Parameters
     ----------
     message : str
@@ -149,14 +150,14 @@ def display_progress(message: str, duration: float = 2.0) -> None:
 def confirm_action(message: str, default: bool = True) -> bool:
     """
     Display a confirmation dialog.
-    
+
     Parameters
     ----------
     message : str
         Question to ask user
     default : bool, default=True
         Default response if user presses Enter
-    
+
     Returns
     -------
     bool
@@ -164,7 +165,7 @@ def confirm_action(message: str, default: bool = True) -> bool:
     """
     suffix = "[Y/n]" if default else "[y/N]"
     response = input(f"{message} {suffix} ").strip().lower()
-    
+
     if response == "":
         return default
     return response in ["y", "yes"]
@@ -173,7 +174,7 @@ def confirm_action(message: str, default: bool = True) -> bool:
 def display_messages_table(messages: list, title: str = "Messages Summary") -> None:
     """
     Display multiple messages in a beautiful table.
-    
+
     Parameters
     ----------
     messages : list
@@ -184,11 +185,11 @@ def display_messages_table(messages: list, title: str = "Messages Summary") -> N
     table = Table(title=title, show_header=True, header_style="bold magenta")
     table.add_column("Status", width=12)
     table.add_column("Message", style="white")
-    
+
     for level, message in messages:
         theme = MESSAGE_THEMES.get(level, MESSAGE_THEMES["info"])
         table.add_row(f"[{theme['style']}]{theme['icon']} {level.upper()}[/]", message)
-    
+
     console.print(table)
 
 
@@ -199,7 +200,7 @@ def parse_args():
     parser.add_argument("message", help="Message content")
     parser.add_argument("--title", help="Panel title")
     parser.add_argument("--panel", action="store_true", help="Display in panel")
-    
+
     return parser.parse_args()
 
 
@@ -210,7 +211,7 @@ def parse_args():
 
 def main() -> None:
     """Demo all the wow features."""
-    
+
     # If command line arguments provided, use CLI mode
     try:
         args = parse_args()
@@ -219,18 +220,18 @@ def main() -> None:
     except SystemExit:
         # No CLI args, run demo mode
         pass
-    
+
     # Demo mode - show all features
     display_message("info", "System initialized successfully")
     display_message("success", "All checks passed!")
-    
+
     # Panel messages
     display_message("warning", "Backup scheduled for 2:00 AM", "System Alert", panel_style=True)
     display_message("star", "You've reached a milestone!", "Achievement", panel_style=True)
-    
+
     # Progress demo
     display_progress("Processing data...", 3.0)
-    
+
     # Table demo
     messages = [
         ("success", "Database connection established"),
@@ -239,7 +240,7 @@ def main() -> None:
         ("failure", "Email service unavailable"),
     ]
     display_messages_table(messages)
-    
+
     # Confirmation demo
     if confirm_action("Do you want to continue?"):
         display_message("success", "Action confirmed!")
