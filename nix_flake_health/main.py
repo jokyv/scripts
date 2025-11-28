@@ -10,15 +10,15 @@ input. Compares installed versions against latest available versions.
 import argparse
 import json
 import os
+import re
 import subprocess
 from dataclasses import dataclass
 from datetime import datetime
 from pathlib import Path
-from typing import Dict, List, Optional, Tuple
 
 import tomllib
 from rich.console import Console
-from rich.progress import Progress, SpinnerColumn, TextColumn, BarColumn, TaskProgressColumn
+from rich.progress import BarColumn, Progress, SpinnerColumn, TaskProgressColumn, TextColumn
 from rich.table import Table
 
 # ===============================================
@@ -40,7 +40,7 @@ class Config:
 
     Attributes
     ----------
-    colors : Dict[str, str]
+    colors : dict[str, str]
         ANSI color codes for terminal output
     cache : Dict[str, int]
         Cache configuration including TTL
@@ -49,9 +49,9 @@ class Config:
 
     """
 
-    colors: Dict[str, str] = None
-    cache: Dict[str, int] = None
-    defaults: Dict[str, str] = None
+    colors: dict[str, str] = None
+    cache: dict[str, int] = None
+    defaults: dict[str, str] = None
 
     def __post_init__(self):
         if self.colors is None:
@@ -88,13 +88,13 @@ def get_cache_dir() -> Path:
     return Path.home() / ".cache" / "nix-flake-health"
 
 
-def get_default_package_paths() -> List[Path]:
+def get_default_package_paths() -> list[Path]:
     """
     Get default package config file paths.
 
     Returns
     -------
-    List[Path]
+    list[Path]
         List of potential config file locations
 
     """
@@ -111,7 +111,7 @@ def get_default_package_paths() -> List[Path]:
 # ===============================================
 
 
-def run_command(cmd: List[str], capture_output: bool = True) -> Tuple[int, str, str]:
+def run_command(cmd: list[str], capture_output: bool = True) -> tuple[int, str, str]:
     """
     Run a command and return exit code, stdout, stderr.
 
@@ -153,7 +153,7 @@ def get_current_system() -> str:
         return "x86_64-linux"  # fallback
 
 
-def find_packages_config(override: Optional[str] = None) -> Path:
+def find_packages_config(override: str | None = None) -> Path:
     """
     Find packages config file.
 
@@ -219,7 +219,7 @@ def extract_branch_from_url(url: str) -> str:
     return "unknown"
 
 
-def extract_nixpkgs_info(flake_path: Path) -> Dict:
+def extract_nixpkgs_info(flake_path: Path) -> dict:
     """
     Extract main nixpkgs branch, locked revision, and last modified date.
 
@@ -237,11 +237,11 @@ def extract_nixpkgs_info(flake_path: Path) -> Dict:
     # Change to the directory containing the flake.nix file
     original_cwd = Path.cwd()
     flake_dir = flake_path.parent
-    
+
     try:
         # Change to flake directory so nix commands work correctly
         os.chdir(flake_dir)
-        
+
         # Get flake metadata
         exit_code, stdout, stderr = run_command(["nix", "flake", "metadata", "--json"], capture_output=True)
 
@@ -265,13 +265,13 @@ def extract_nixpkgs_info(flake_path: Path) -> Dict:
 
         except (json.JSONDecodeError, KeyError):
             return {"branch": "nixos-unstable", "locked_rev": None, "last_modified": None}
-    
+
     finally:
         # Always return to original directory
         os.chdir(original_cwd)
 
 
-def load_packages(config_path: Path) -> List[str]:
+def load_packages(config_path: Path) -> list[str]:
     """
     Load simple package list from TOML.
 
@@ -360,7 +360,7 @@ def is_cache_valid(cache_path: Path) -> bool:
     return age < CONFIG.cache["ttl"]
 
 
-def read_cache(key: str) -> Optional[str]:
+def read_cache(key: str) -> str | None:
     """
     Read from cache.
 
@@ -379,7 +379,7 @@ def read_cache(key: str) -> Optional[str]:
 
     if is_cache_valid(cache_path):
         try:
-            with open(cache_path, "r") as f:
+            with open(cache_path) as f:
                 return json.load(f)
         except (json.JSONDecodeError, FileNotFoundError):
             return None
@@ -406,7 +406,7 @@ def write_cache(key: str, value: str) -> None:
         json.dump(value, f)
 
 
-def get_package_version(flake_ref: str, input_name: str, package: str, use_cache: bool) -> Tuple[str, bool]:
+def get_package_version(flake_ref: str, input_name: str, package: str, use_cache: bool) -> tuple[str, bool]:
     """
     Get package version from nix eval.
 
@@ -454,8 +454,8 @@ def get_package_version(flake_ref: str, input_name: str, package: str, use_cache
 
 
 def get_batch_package_versions(
-    flake_ref: str, input_name: str, packages: List[str], use_cache: bool
-) -> Dict[str, Tuple[str, bool]]:
+    flake_ref: str, input_name: str, packages: list[str], use_cache: bool
+) -> dict[str, tuple[str, bool]]:
     """
     Get multiple package versions in a single batch command.
 
@@ -530,7 +530,7 @@ def get_batch_package_versions(
     return results
 
 
-def parse_version(version_str: str) -> Tuple[List[int], str]:
+def parse_version(version_str: str) -> tuple[list[int], str]:
     """
     Parse version string into comparable parts.
 
@@ -545,14 +545,12 @@ def parse_version(version_str: str) -> Tuple[List[int], str]:
         Tuple of (numeric parts, remaining string)
 
     """
-    import re
-
     # Extract numeric parts at the beginning
-    match = re.match(r'^(\d+(?:\.\d+)*)', version_str)
+    match = re.match(r"^(\d+(?:\.\d+)*)", version_str)
     if match:
         numeric_part = match.group(1)
-        numeric_parts = [int(x) for x in numeric_part.split('.')]
-        remaining = version_str[len(numeric_part):]
+        numeric_parts = [int(x) for x in numeric_part.split(".")]
+        remaining = version_str[len(numeric_part) :]
         return numeric_parts, remaining
 
     return [], version_str
@@ -639,7 +637,7 @@ def format_version(version: str, status: str) -> str:
             return version
 
 
-def print_table(results: List[Dict], revision_age: str) -> None:
+def print_table(results: list[dict], revision_age: str) -> None:
     """
     Print results as a formatted table using Rich.
 
@@ -683,7 +681,7 @@ def print_table(results: List[Dict], revision_age: str) -> None:
 
         # Format current version with appropriate color
         current_version = f"[{current_style}]{row['current']}[/{current_style}]"
-        
+
         # Format latest version - use same color as current for outdated packages
         if row["status"] == "outdated":
             latest_version = f"[{current_style}]{row['latest']}[/{current_style}]"
@@ -704,7 +702,7 @@ def print_table(results: List[Dict], revision_age: str) -> None:
 
 def main(
     flake: str = DEFAULT_FLAKE_PATH,
-    pkgs: Optional[str] = None,
+    pkgs: str | None = None,
     updates_only: bool = False,
     no_cache: bool = False,
     json_output: bool = False,
@@ -737,7 +735,7 @@ def main(
         else:
             # Fall back to current working directory
             flake_path = Path.cwd() / flake_path
-    
+
     # Validate flake exists
     if not flake_path.exists():
         print(f"{CONFIG.colors['error']}Error: flake.nix not found at {flake_path}{CONFIG.colors['reset']}")
@@ -803,7 +801,7 @@ def main(
         console=console,
     ) as progress:
         # Batch fetch current versions
-        task = progress.add_task(f"[cyan]Fetching current versions...", total=2)
+        task = progress.add_task("[cyan]Fetching current versions...", total=2)
         current_versions = {}
         if nixpkgs_info.get("locked_rev"):
             current_versions = get_batch_package_versions(
@@ -819,7 +817,7 @@ def main(
         progress.advance(task)
 
         # Batch fetch latest versions
-        progress.update(task, description=f"[cyan]Fetching latest versions...")
+        progress.update(task, description="[cyan]Fetching latest versions...")
         latest_versions = get_batch_package_versions(
             f"github:nixos/nixpkgs/{nixpkgs_info['branch']}", f"legacyPackages.{system}", packages, use_cache
         )
@@ -885,7 +883,7 @@ def main(
             print(f"  • Cache: {cache_hits} hits, {cache_misses} misses ({cache_hit_rate:.0f}% hit rate)")
 
         print(f"\n{CONFIG.colors['info']}Next steps:{CONFIG.colors['reset']}")
-        print(f"  nix flake lock --update-input nixpkgs")
+        print("  nix flake lock --update-input nixpkgs")
     else:
         print(f"\n{CONFIG.colors['equal']}✓ All packages are up to date!{CONFIG.colors['reset']}")
 
