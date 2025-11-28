@@ -413,9 +413,9 @@ def get_package_version(flake_ref: str, input_name: str, package: str, use_cache
     Parameters
     ----------
     flake_ref : str
-        Flake reference to evaluate
+        Flake reference (can be local path or remote URL like github:nixos/nixpkgs/branch)
     input_name : str
-        Input name within flake
+        Input name within flake (e.g., legacyPackages.x86_64-linux)
     package : str
         Package name to get version for
     use_cache : bool
@@ -435,10 +435,10 @@ def get_package_version(flake_ref: str, input_name: str, package: str, use_cache
         if cached is not None:
             return cached, True
 
-    # Try to get version with better error handling
-    # Use tryEval to handle missing packages or packages without .version attribute
-    nix_expr = f'let eval = builtins.tryEval ({input_name}.{package}.version or null); in if eval.success && eval.value != null then eval.value else "not found"'
-    cmd = ["nix", "eval", f"{flake_ref}#{nix_expr}", "--raw"]
+    # Use --expr with builtins.getFlake to access packages
+    # This works reliably for both local paths and remote URLs
+    nix_expr = f'(builtins.getFlake "{flake_ref}").{input_name}.{package}.version or "not found"'
+    cmd = ["nix", "eval", "--impure", "--expr", nix_expr, "--raw"]
     exit_code, stdout, stderr = run_command(cmd)
 
     if exit_code == 0:
@@ -462,9 +462,9 @@ def get_batch_package_versions(
     Parameters
     ----------
     flake_ref : str
-        Flake reference to evaluate
+        Flake reference (can be local path or remote URL like github:nixos/nixpkgs/branch)
     input_name : str
-        Input name within flake
+        Input name within flake (e.g., legacyPackages.x86_64-linux)
     packages : List[str]
         List of package names to get versions for
     use_cache : bool
@@ -494,18 +494,15 @@ def get_batch_package_versions(
         return results
 
     # Build nix expression to get all versions at once
-    # Use tryEval to handle missing packages gracefully
-    expr_parts = []
+    # Build attribute assignments for each package
+    attr_parts = []
     for pkg in packages_to_fetch:
-        # Use tryEval to catch errors for missing packages or packages without .version
-        expr_parts.append(
-            f'"{pkg}" = let eval = builtins.tryEval ({input_name}.{pkg}.version or null); '
-            f'in if eval.success && eval.value != null then eval.value else "not found";'
-        )
-    expr = f"{{ {' '.join(expr_parts)} }}"
+        attr_parts.append(f'"{pkg}" = pkgs.{pkg}.version or "not found"')
+    attrs = "{ " + "; ".join(attr_parts) + "; }"
 
-    # Evaluate the expression
-    cmd = ["nix", "eval", f"{flake_ref}#builtins.mapAttrs (n: v: v) ({expr})", "--json"]
+    # Use --expr with builtins.getFlake for reliable batch evaluation
+    nix_expr = f'let pkgs = (builtins.getFlake "{flake_ref}").{input_name}; in {attrs}'
+    cmd = ["nix", "eval", "--impure", "--expr", nix_expr, "--json"]
     exit_code, stdout, stderr = run_command(cmd)
 
     if exit_code == 0:
