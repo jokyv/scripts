@@ -3,7 +3,21 @@ from ttkbootstrap.constants import *
 
 
 class Stopwatch(ttk.Frame):
+    """
+    A GUI stopwatch application using ttkbootstrap.
+
+    Provides start, pause, reset, and quit functionality with time display.
+    """
+
     def __init__(self, master):
+        """
+        Initialize the Stopwatch application.
+
+        Parameters
+        ----------
+        master : ttk.Window
+            The parent window for the stopwatch
+        """
         super().__init__(master)
         self.pack(fill=BOTH, expand=YES)
         self.running = ttk.BooleanVar(value=False)

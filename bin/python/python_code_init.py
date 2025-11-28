@@ -24,6 +24,16 @@ TEMPLATE_PATH = f"{HOME_DIR}/scripts/bin/python/python_project_template.py"
 
 
 def init_code(filename) -> None:
+    """
+    Initialize a new Python script from a template.
+
+    Creates a new Python file from a predefined template and opens it in the editor.
+
+    Parameters
+    ----------
+    filename : str
+        Name of the Python file to create (must end with .py extension)
+    """
     if not os.path.exists(filename):
         if filename.endswith(".py"):
             dm("INFO", f"created a file with name {filename} from {TEMPLATE_PATH}")

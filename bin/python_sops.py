@@ -37,6 +37,19 @@ def decrypt_sops_file(file_path: str) -> dict[Any, Any] | Any:
 
 
 def get_secret(value):
+    """
+    Retrieve a specific secret from the encrypted secrets file.
+
+    Parameters
+    ----------
+    value : str
+        The key name of the secret to retrieve
+
+    Returns
+    -------
+    Any
+        The value of the requested secret, or None if not found
+    """
     # Path to your encrypted secrets file
     secrets_path = os.path.expanduser("~/scripts/secrets.enc.yaml")
 

@@ -3,7 +3,23 @@ from ttkbootstrap.constants import *
 
 
 class Calculator(ttk.Frame):
+    """
+    A GUI calculator application using ttkbootstrap.
+
+    Provides basic arithmetic operations with a graphical number pad interface.
+    """
+
     def __init__(self, master, **kwargs):
+        """
+        Initialize the Calculator application.
+
+        Parameters
+        ----------
+        master : ttk.Window
+            The parent window for the calculator
+        **kwargs : dict
+            Additional keyword arguments, including optional 'bootstyle'
+        """
         super().__init__(master, padding=10, **kwargs)
         ttk.Style().configure("TButton", font="TkFixedFont 12")  # NOTE:
         self.pack(fill=BOTH, expand=YES)
@@ -21,6 +37,7 @@ class Calculator(ttk.Frame):
         self.create_num_pad()
 
     def create_num_display(self):
+        """Create the numeric display area for showing calculator input and results."""
         container = ttk.Frame(master=self, padding=2, bootstyle=self.bootstyle)  # NOTE:
 
         container.pack(fill=X, pady=20)
@@ -33,6 +50,7 @@ class Calculator(ttk.Frame):
         digits.pack(fill=X)
 
     def create_num_pad(self):
+        """Create the button grid for calculator operations and number input."""
         container = ttk.Frame(master=self, padding=2, bootstyle=self.bootstyle)  # NOTE:
 
         container.pack(fill=BOTH, expand=YES)
@@ -51,6 +69,21 @@ class Calculator(ttk.Frame):
                 btn.grid(row=i, column=j, sticky=NSEW, padx=1, pady=1)
 
     def create_button(self, master, text):
+        """
+        Create a styled calculator button.
+
+        Parameters
+        ----------
+        master : ttk.Frame
+            The parent container for the button
+        text : str or int
+            The label text for the button
+
+        Returns
+        -------
+        ttk.Button
+            The configured button widget
+        """
         if text == "=":
             bootstyle = SUCCESS
         elif not isinstance(text, int):
@@ -68,6 +101,7 @@ class Calculator(ttk.Frame):
         )
 
     def reset_variables(self):
+        """Reset all calculator variables to their initial state."""
         self.xnum.set(value=0)
         self.ynum.set(value=0)
         self.operator.set("+")

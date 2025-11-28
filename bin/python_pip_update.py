@@ -122,7 +122,14 @@ def _display_update_summary(results: dict) -> None:
 
 
 def pip_update_libraries(libraries_to_update: list[str]):
-    """Update a list of python libraries using uv and summarize changes."""
+    """
+    Update a list of python libraries using uv and summarize changes.
+
+    Parameters
+    ----------
+    libraries_to_update : list[str]
+        List of package names to update
+    """
     dm("INFO", "Getting current package versions...")
     before_versions = get_installed_packages()
 
@@ -158,12 +165,20 @@ def pip_update_libraries(libraries_to_update: list[str]):
 
 
 def pip_update_selected_libraries():
-    """Update a predefined list of libraries."""
+    """
+    Update a predefined list of libraries.
+
+    Updates all libraries specified in the LIBRARIES_TO_UPDATE constant.
+    """
     pip_update_libraries(LIBRARIES_TO_UPDATE)
 
 
 def pip_update_all_libraries():
-    """Update all libraries in the current environment."""
+    """
+    Update all libraries in the current environment.
+
+    Retrieves a list of all installed packages and updates them to their latest versions.
+    """
     # Get the list of all libraries
     result = subprocess.run(["uv", "pip", "list"], capture_output=True, text=True)
     lines = result.stdout.strip().split("\n")

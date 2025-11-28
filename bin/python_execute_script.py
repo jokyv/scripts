@@ -15,12 +15,28 @@ import sys
 
 
 def is_venv_active():
+    """
+    Check if a Python virtual environment is currently active.
+
+    Returns
+    -------
+    bool
+        True if a virtual environment is active, False otherwise
+    """
     return hasattr(sys, "real_prefix") or (
         hasattr(sys, "base_prefix") and sys.base_prefix != sys.prefix
     )
 
 
 def run_script(script_path):
+    """
+    Execute a Python script using the current Python interpreter.
+
+    Parameters
+    ----------
+    script_path : str
+        Path to the Python script to execute
+    """
     try:
         subprocess.run([sys.executable, script_path], check=True)
     except subprocess.CalledProcessError as e:
@@ -35,6 +51,11 @@ def run_script(script_path):
 
 
 def main():
+    """
+    Main entry point for script execution with virtual environment check.
+
+    Verifies that a virtual environment is active before executing the provided script.
+    """
     if len(sys.argv) < 2:
         print("Press instead: p <path_to_script>")
         sys.exit(1)

@@ -15,6 +15,16 @@ import requests
 
 # TODO: this probably does not work in python
 def source_bash_profile():
+    """
+    Source the user's .bash_profile and update environment variables.
+
+    Clears the terminal, sources ~/.bash_profile, and updates Python's environment
+    with the variables from the bash session.
+
+    Note
+    ----
+    This may not work as expected in Python due to subprocess isolation.
+    """
     # Clear the terminal
     subprocess.run(["clear"], shell=True)
     print("-- terminal cleared")
@@ -50,6 +60,18 @@ def source_bash_profile():
 
 # TODO: this probably does not work in python
 def cd_with_eza(directory):
+    """
+    Change directory and display contents with eza tree view.
+
+    Parameters
+    ----------
+    directory : str
+        Path to the directory to change to
+
+    Note
+    ----
+    This may not work as expected in Python due to subprocess isolation.
+    """
     try:
         os.chdir(directory)
         subprocess.run(["eza", "-hT", "--tree", "--level=2", "--sort=ext"])
@@ -59,6 +81,12 @@ def cd_with_eza(directory):
 
 # TODO: that is working!
 def check_driver():
+    """
+    Check NVMe drive health using smartctl.
+
+    Runs smartctl to display detailed drive information for /dev/nvme0n1.
+    Requires sudo privileges.
+    """
     try:
         subprocess.run(["sudo", "smartctl", "-a", "/dev/nvme0n1"], check=True)
     except subprocess.CalledProcessError as e:
@@ -67,6 +95,14 @@ def check_driver():
 
 # TODO: that is working!
 def fkill(signal=9):
+    """
+    Interactive process killer using fzf for selection.
+
+    Parameters
+    ----------
+    signal : int, optional
+        Signal number to send to the process, by default 9 (SIGKILL)
+    """
     try:
         uid = os.getuid()
         ps_command = f"ps -f -u {uid} | sed 1d" if uid != 0 else "ps -ef | sed 1d"
@@ -126,6 +162,19 @@ def ip_address(ip=""):
 # TODO: that is NOT working
 # it creates the directory but doesnt switch to it
 def mkd(directory):
+    """
+    Create a directory and change to it.
+
+    Parameters
+    ----------
+    directory : str
+        Path of the directory to create
+
+    Note
+    ----
+    Directory is created but changing to it may not work as expected in Python
+    due to subprocess isolation.
+    """
     try:
         os.makedirs(
             directory, exist_ok=True
@@ -137,6 +186,12 @@ def mkd(directory):
 
 
 def hours_since_last_commit():
+    """
+    Calculate and display hours since the last git commit.
+
+    Retrieves the timestamp of the last git commit and calculates
+    how many hours have elapsed since then.
+    """
     try:
         # Get the current time in seconds since the epoch
         now = int(time.time())
