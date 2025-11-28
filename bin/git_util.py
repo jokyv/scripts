@@ -462,7 +462,7 @@ def pull_all_git_dirs() -> None:
     Excludes directories specified in CONFIG.exclude_dirs.
 
     """
-    display_message("info", "Finding all git repositories")
+    display_message("info", "Pulling updates for all git repositories")
 
     git_dirs = find_git_directories(HOME, CONFIG.exclude_dirs)
 
@@ -475,11 +475,6 @@ def pull_all_git_dirs() -> None:
     results = []
 
     for repo_path in git_dirs:
-        console.print("")
-        console.rule("[bold red]Checking repo")
-
-        display_message("checking", f"Pulling updates for: {repo_path}")
-
         exit_code, stdout, stderr = run_command(["git", "pull"], cwd=repo_path)
 
         if exit_code == 0:
