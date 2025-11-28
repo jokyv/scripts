@@ -18,6 +18,7 @@ from typing import Dict, List, Optional, Tuple
 
 import tomllib
 from rich.console import Console
+from rich.progress import Progress, SpinnerColumn, TextColumn, BarColumn, TaskProgressColumn
 from rich.table import Table
 
 # ===============================================
@@ -287,7 +288,7 @@ def load_packages(config_path: Path) -> List[str]:
     Raises
     ------
     ValueError
-        If config file doesn't contain [packages] section
+        If config file doesn't contain [packages] section or has invalid format
 
     """
     with open(config_path, "rb") as f:
@@ -296,7 +297,23 @@ def load_packages(config_path: Path) -> List[str]:
     if "packages" not in config:
         raise ValueError("apps.toml must contain a [packages] section")
 
-    return config["packages"].get("packages", [])
+    packages = config["packages"].get("packages", [])
+
+    # Validate packages
+    if not isinstance(packages, list):
+        raise ValueError("packages must be a list")
+
+    if not packages:
+        raise ValueError("packages list is empty")
+
+    # Validate each package name
+    for pkg in packages:
+        if not isinstance(pkg, str):
+            raise ValueError(f"Invalid package entry: {pkg} (must be a string)")
+        if not pkg or pkg.strip() == "":
+            raise ValueError("Package name cannot be empty")
+
+    return packages
 
 
 def get_cache_path(key: str) -> Path:
@@ -389,7 +406,7 @@ def write_cache(key: str, value: str) -> None:
         json.dump(value, f)
 
 
-def get_package_version(flake_ref: str, input_name: str, package: str, use_cache: bool) -> str:
+def get_package_version(flake_ref: str, input_name: str, package: str, use_cache: bool) -> Tuple[str, bool]:
     """
     Get package version from nix eval.
 
@@ -406,32 +423,144 @@ def get_package_version(flake_ref: str, input_name: str, package: str, use_cache
 
     Returns
     -------
-    str
-        Package version or 'not found' if unavailable
+    Tuple[str, bool]
+        Package version (or 'not found' if unavailable) and whether it was from cache
 
     """
     cache_key = f"{flake_ref}-{input_name}-{package}"
+    from_cache = False
 
     if use_cache:
         cached = read_cache(cache_key)
         if cached is not None:
-            return cached
+            return cached, True
 
-    # Try to get version
-    cmd = ["nix", "eval", f"{flake_ref}#{input_name}.{package}.version", "--raw"]
+    # Try to get version with better error handling
+    # Use tryEval to handle missing packages or packages without .version attribute
+    nix_expr = f'let eval = builtins.tryEval ({input_name}.{package}.version or null); in if eval.success && eval.value != null then eval.value else "not found"'
+    cmd = ["nix", "eval", f"{flake_ref}#{nix_expr}", "--raw"]
     exit_code, stdout, stderr = run_command(cmd)
 
-    version = stdout.strip() if exit_code == 0 else "not found"
+    if exit_code == 0:
+        version = stdout.strip()
+    else:
+        # If the nix eval command itself fails, mark as not found
+        version = "not found"
 
     if use_cache and version != "not found":
         write_cache(cache_key, version)
 
-    return version
+    return version, from_cache
+
+
+def get_batch_package_versions(
+    flake_ref: str, input_name: str, packages: List[str], use_cache: bool
+) -> Dict[str, Tuple[str, bool]]:
+    """
+    Get multiple package versions in a single batch command.
+
+    Parameters
+    ----------
+    flake_ref : str
+        Flake reference to evaluate
+    input_name : str
+        Input name within flake
+    packages : List[str]
+        List of package names to get versions for
+    use_cache : bool
+        Whether to use cached values
+
+    Returns
+    -------
+    Dict[str, Tuple[str, bool]]
+        Dictionary mapping package name to (version, from_cache) tuple
+
+    """
+    results = {}
+    packages_to_fetch = []
+
+    # Check cache first
+    for package in packages:
+        cache_key = f"{flake_ref}-{input_name}-{package}"
+        if use_cache:
+            cached = read_cache(cache_key)
+            if cached is not None:
+                results[package] = (cached, True)
+                continue
+        packages_to_fetch.append(package)
+
+    # If all were cached, return early
+    if not packages_to_fetch:
+        return results
+
+    # Build nix expression to get all versions at once
+    # Use tryEval to handle missing packages gracefully
+    expr_parts = []
+    for pkg in packages_to_fetch:
+        # Use tryEval to catch errors for missing packages or packages without .version
+        expr_parts.append(
+            f'"{pkg}" = let eval = builtins.tryEval ({input_name}.{pkg}.version or null); '
+            f'in if eval.success && eval.value != null then eval.value else "not found";'
+        )
+    expr = f"{{ {' '.join(expr_parts)} }}"
+
+    # Evaluate the expression
+    cmd = ["nix", "eval", f"{flake_ref}#builtins.mapAttrs (n: v: v) ({expr})", "--json"]
+    exit_code, stdout, stderr = run_command(cmd)
+
+    if exit_code == 0:
+        try:
+            versions = json.loads(stdout)
+            for package in packages_to_fetch:
+                version = versions.get(package, "not found")
+                results[package] = (version, False)
+                # Cache the result
+                if use_cache and version != "not found":
+                    cache_key = f"{flake_ref}-{input_name}-{package}"
+                    write_cache(cache_key, version)
+        except (json.JSONDecodeError, KeyError):
+            # Fall back to individual checks
+            for package in packages_to_fetch:
+                results[package] = get_package_version(flake_ref, input_name, package, use_cache)
+    else:
+        # Fall back to individual checks if batch failed
+        for package in packages_to_fetch:
+            results[package] = get_package_version(flake_ref, input_name, package, use_cache)
+
+    return results
+
+
+def parse_version(version_str: str) -> Tuple[List[int], str]:
+    """
+    Parse version string into comparable parts.
+
+    Parameters
+    ----------
+    version_str : str
+        Version string to parse
+
+    Returns
+    -------
+    Tuple[List[int], str]
+        Tuple of (numeric parts, remaining string)
+
+    """
+    import re
+
+    # Extract numeric parts at the beginning
+    match = re.match(r'^(\d+(?:\.\d+)*)', version_str)
+    if match:
+        numeric_part = match.group(1)
+        numeric_parts = [int(x) for x in numeric_part.split('.')]
+        remaining = version_str[len(numeric_part):]
+        return numeric_parts, remaining
+
+    return [], version_str
 
 
 def compare_versions(current: str, latest: str) -> str:
     """
-    Compare two version strings.
+    Compare two version strings using semantic versioning.
 
     Parameters
     ----------
@@ -451,8 +580,37 @@ def compare_versions(current: str, latest: str) -> str:
 
     if current == latest:
         return "equal"
-    else:
-        return "outdated"
+
+    # Try semantic version comparison
+    try:
+        current_parts, current_suffix = parse_version(current)
+        latest_parts, latest_suffix = parse_version(latest)
+
+        # If we have numeric parts, compare them
+        if current_parts and latest_parts:
+            # Pad shorter version with zeros
+            max_len = max(len(current_parts), len(latest_parts))
+            current_parts += [0] * (max_len - len(current_parts))
+            latest_parts += [0] * (max_len - len(latest_parts))
+
+            # Compare numeric parts
+            for c, l in zip(current_parts, latest_parts):
+                if c < l:
+                    return "outdated"
+                elif c > l:
+                    return "equal"  # Current is newer than "latest"
+
+            # If numeric parts are equal, compare suffixes
+            if current_suffix != latest_suffix:
+                return "outdated"
+
+            return "equal"
+    except Exception:
+        # Fall back to string comparison
+        pass
+
+    # Simple fallback: if they're not equal, assume outdated
+    return "outdated"
 
 
 def format_version(version: str, status: str) -> str:
@@ -628,34 +786,74 @@ def main(
     # Check each package against nixpkgs
     use_cache = not no_cache
     results = []
+    cache_hits = 0
+    cache_misses = 0
 
-    for package in packages:
-        print(f"  Checking {package}...")
+    # Show cache mode
+    cache_mode_str = "disabled" if no_cache else "enabled"
+    print(f"{CONFIG.colors['info']}Cache: {cache_mode_str}{CONFIG.colors['reset']}\n")
 
-        # Get current version from locked revision
+    # Use progress bar for visual feedback
+    console = Console()
+    with Progress(
+        SpinnerColumn(),
+        TextColumn("[progress.description]{task.description}"),
+        BarColumn(),
+        TaskProgressColumn(),
+        console=console,
+    ) as progress:
+        # Batch fetch current versions
+        task = progress.add_task(f"[cyan]Fetching current versions...", total=2)
+        current_versions = {}
         if nixpkgs_info.get("locked_rev"):
-            current = get_package_version(
-                f"github:nixos/nixpkgs/{nixpkgs_info['locked_rev']}", f"legacyPackages.{system}", package, use_cache
+            current_versions = get_batch_package_versions(
+                f"github:nixos/nixpkgs/{nixpkgs_info['locked_rev']}",
+                f"legacyPackages.{system}",
+                packages,
+                use_cache,
             )
         else:
-            current = "no lock"
+            # If no locked revision, mark all as "no lock"
+            for package in packages:
+                current_versions[package] = ("no lock", False)
+        progress.advance(task)
 
-        # Get latest version from upstream branch
-        latest = get_package_version(
-            f"github:nixos/nixpkgs/{nixpkgs_info['branch']}", f"legacyPackages.{system}", package, use_cache
+        # Batch fetch latest versions
+        progress.update(task, description=f"[cyan]Fetching latest versions...")
+        latest_versions = get_batch_package_versions(
+            f"github:nixos/nixpkgs/{nixpkgs_info['branch']}", f"legacyPackages.{system}", packages, use_cache
         )
+        progress.advance(task)
 
-        status = compare_versions(current, latest)
+        # Process results
+        for package in packages:
+            current, current_from_cache = current_versions.get(package, ("not found", False))
+            latest, latest_from_cache = latest_versions.get(package, ("not found", False))
 
-        results.append(
-            {
-                "package": package,
-                "branch": nixpkgs_info["branch"],
-                "current": current,
-                "latest": latest,
-                "status": status,
-            }
-        )
+            # Track cache statistics
+            if current_from_cache:
+                cache_hits += 1
+            else:
+                cache_misses += 1
+
+            if latest_from_cache:
+                cache_hits += 1
+            else:
+                cache_misses += 1
+
+            status = compare_versions(current, latest)
+
+            results.append(
+                {
+                    "package": package,
+                    "branch": nixpkgs_info["branch"],
+                    "current": current,
+                    "latest": latest,
+                    "status": status,
+                    "current_cached": current_from_cache,
+                    "latest_cached": latest_from_cache,
+                }
+            )
 
     # Filter results if updates-only
     display_results = [r for r in results if r["status"] == "outdated"] if updates_only else results
@@ -680,10 +878,22 @@ def main(
         print(f"  • Branch: {nixpkgs_info['branch']}")
         print(f"  • Current Revision Age: {revision_age_str}")
 
+        # Show cache statistics
+        if use_cache:
+            total_checks = cache_hits + cache_misses
+            cache_hit_rate = (cache_hits / total_checks * 100) if total_checks > 0 else 0
+            print(f"  • Cache: {cache_hits} hits, {cache_misses} misses ({cache_hit_rate:.0f}% hit rate)")
+
         print(f"\n{CONFIG.colors['info']}Next steps:{CONFIG.colors['reset']}")
         print(f"  nix flake lock --update-input nixpkgs")
     else:
         print(f"\n{CONFIG.colors['equal']}✓ All packages are up to date!{CONFIG.colors['reset']}")
+
+        # Show cache statistics
+        if use_cache:
+            total_checks = cache_hits + cache_misses
+            cache_hit_rate = (cache_hits / total_checks * 100) if total_checks > 0 else 0
+            print(f"  • Cache: {cache_hits} hits, {cache_misses} misses ({cache_hit_rate:.0f}% hit rate)")
 
 
 if __name__ == "__main__":
