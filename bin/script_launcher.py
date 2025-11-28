@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 """Python implementation of the app launcher using fzf."""
 
+import os
 import subprocess
 import sys
 from pathlib import Path
@@ -151,5 +152,4 @@ def main() -> None:
 
 
 if __name__ == "__main__":
-    import os
     main()
