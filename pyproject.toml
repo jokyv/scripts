@@ -6,7 +6,7 @@ readme = "README.md"
 requires-python = ">=3.14"
 authors = [{ name = "John Kyvetos", email = "johnkyvetos@gmail.com" }]
 # add dependencies for this project
-dependencies = []
+dependencies = ["rich>=13.0.0", "requests>=2.25.0", "pyyaml>=6.0.0"]
 
 [tool.uv]
 # True for libraries/packaged apps
@@ -29,4 +29,16 @@ security = ["detect-secrets", "trufflehog"]
 # add deptry with `uv add --dev deptry`
 # run deptry with `uv run deptry .`
 [tool.deptry]
-per_rule_ignores = { DEP002 = ["deptry", "ruff", "ty", "pytest"] }
+per_rule_ignores = { DEP002 = [
+  "deptry",
+  "ruff",
+  "ty",
+  "pytest",
+], DEP001 = [
+  "python_sops",
+  "messaging",
+], DEP003 = [
+  "python_sops",
+  "messaging",
+] }
+exclude = ["archived_scripts/**", ".venv/**"]
