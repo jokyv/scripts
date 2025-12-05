@@ -1,0 +1,90 @@
+repos:
+  - repo: https://github.com/astral-sh/ruff-pre-commit
+    rev: v0.9.6
+    hooks:
+      - id: ruff-format
+
+  # use the versions from repo's .venv
+  # - repo: local
+  #   hooks:
+  #     - id: ruff
+  #       name: ruff
+  #       entry: uv run ruff check --force-exclude
+  #       language: system
+  #       types: [python]
+  #       require_serial: true
+
+  #     - id: ruff-format
+  #       name: ruff-format
+  #       entry: uv run ruff format --force-exclude
+  #       language: system
+  #       types: [python]
+  #       require_serial: true
+
+  #     - id: ty
+  #       name: ty
+  #       entry: uv run ty check
+  #       language: system
+  #       types: [python]
+  #       pass_filenames: false # ty usually checks the whole project
+
+  - repo: https://github.com/crate-ci/typos
+    rev: v1.29.4
+    hooks:
+      - id: typos
+        # Exclude generated files and data directories
+        exclude: |
+          (?x)^(
+            .*\.csv|
+            .*\.html|
+            .*\.ods|
+            .*\.lock
+          )$
+
+  # SECRET SCANNING TOOLS - DISABLED FOR PERFORMANCE
+
+  # Run periodically secret scanning manually: uv run trufflehog . --since=main~10
+
+  # - repo: https://github.com/trufflesecurity/trufflehog
+  #   rev: v2.2.1
+  #   hooks:
+  #     - id: trufflehog
+  #       args: ['--since=HEAD~1', '--fail']  # Only check last commit
+
+  # - repo: https://github.com/Yelp/detect-secrets
+  #   rev: v1.5.0
+  #   hooks:
+  #     - id: detect-secrets
+  #       args: ['--baseline', '.secrets.baseline']
+
+  - repo: https://github.com/pycqa/bandit
+    rev: 1.9.2
+    hooks:
+      - id: bandit
+        args: ["-q", "--severity-level=high", "--exit-zero"]
+        exclude: ^tests/
+
+  - repo: https://github.com/pre-commit/pre-commit-hooks
+    rev: v5.0.0
+    hooks:
+      # Check for large files
+      - id: check-added-large-files
+        args: ["--maxkb=5000"]
+      # Check for merge conflicts
+      - id: check-merge-conflict
+      # Check YAML syntax
+      - id: check-yaml
+      # Check for trailing whitespace
+      - id: trailing-whitespace
+      # Check JSON files
+      - id: check-json
+      # Check TOML files
+      - id: check-toml
+      # Remove end-of-file whitespace
+      - id: end-of-file-fixer
+      # Mixed line ending
+      - id: mixed-line-ending
+
+      # Prevent committing to main branch
+      # - id: no-commit-to-branch
+      #   args: [--branch, main]
