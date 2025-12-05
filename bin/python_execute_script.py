@@ -23,9 +23,7 @@ def is_venv_active():
     bool
         True if a virtual environment is active, False otherwise
     """
-    return hasattr(sys, "real_prefix") or (
-        hasattr(sys, "base_prefix") and sys.base_prefix != sys.prefix
-    )
+    return hasattr(sys, "real_prefix") or (hasattr(sys, "base_prefix") and sys.base_prefix != sys.prefix)
 
 
 def run_script(script_path):

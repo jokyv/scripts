@@ -24,7 +24,7 @@ LIBRARIES_TO_UPDATE = [
     "altair",
     "hvplot",
     "panel",
-    # linting & formating & data hints
+    # linting & formatting & data hints
     # using ty now
     # "mypy",
     # "pylsp-mypy",  # plugin for mypy

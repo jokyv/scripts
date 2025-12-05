@@ -108,9 +108,7 @@ class Stopwatch(ttk.Frame):
         schedule itself every 1 second until stopped or paused."""
         current = self.elapsed.get() + 1
         self.elapsed.set(current)
-        formatted = "{:02d}:{:02d}:{:02d}".format(
-            (current // 100) // 60, (current // 100) % 60, (current % 100)
-        )
+        formatted = "{:02d}:{:02d}:{:02d}".format((current // 100) // 60, (current // 100) % 60, (current % 100))
         self.stopwatch_text.set(formatted)
         self.afterid.set(self.after(100, self.increment))
 

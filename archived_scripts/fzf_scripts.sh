@@ -4,7 +4,7 @@
 # needs ripgrep
 fzf_file_that_contains_phrase() {
     phrase=$1
-    rg $phrase -l | 
+    rg $phrase -l |
     fzf --preview "bat --style=numbers --color=always {}" |
     xargs -r $EDITOR ;
 }
@@ -30,13 +30,13 @@ fzf_go_to_path() {
 # find all folders from $HOME and choose where to mv next
 # fd -i for enabling case-sensitive
 fzf_move_to_path() {
-    mv -iv $(fd -tf -H -i . $HOME | fzf) $(fd -td -H . $HOME | fzf) 
+    mv -iv $(fd -tf -H -i . $HOME | fzf) $(fd -td -H . $HOME | fzf)
 }
 
 # find all folders from $HOME and choose where to cp next
 # fd -i for enabling case-sensitive
 fzf_copy_to_path() {
-    cp -iv $(fd -tf -H -i . $HOME | fzf) $(fd -td -H . $HOME | fzf) 
+    cp -iv $(fd -tf -H -i . $HOME | fzf) $(fd -td -H . $HOME | fzf)
 }
 
 # find all files from $HOME and opens them with helix
@@ -54,20 +54,20 @@ fzf_find_my_scripts() {
 fzf_restore_file_from_trash() {
     trash list |
     fzf --multi |
-    awk '{$1=$1;print}' | 
-    rev | 
-    cut -d ' ' -f1 | 
-    rev | 
+    awk '{$1=$1;print}' |
+    rev |
+    cut -d ' ' -f1 |
+    rev |
     xargs trash restore --match=exact --force
 }
 
 # empty trash item with trashy
 fzf_empty_file_from_trash() {
-    trash list | 
+    trash list |
     fzf --multi |
-    awk '{$1=$1;print}' | 
-    rev | 
-    cut -d ' ' -f1 | 
-    rev | 
+    awk '{$1=$1;print}' |
+    rev |
+    cut -d ' ' -f1 |
+    rev |
     xargs trash empty --match=exact --force
 }

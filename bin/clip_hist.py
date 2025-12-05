@@ -20,9 +20,7 @@ def paste_clipboard():
         content = wl_paste.communicate()[0].decode().strip()
 
         if not content:
-            send_notification(
-                "Clipboard Paste", "Nothing to paste - clipboard is empty", "critical"
-            )
+            send_notification("Clipboard Paste", "Nothing to paste - clipboard is empty", "critical")
             return
 
         subprocess.run(["wtype", content])
@@ -45,9 +43,7 @@ def add_to_history():
         highlighted = subprocess.check_output(["wl-paste", "-p"]).decode().strip()
 
         if not highlighted:
-            send_notification(
-                "Clipboard History", "No text is currently highlighted", "critical"
-            )
+            send_notification("Clipboard History", "No text is currently highlighted", "critical")
             return
 
         subprocess.run(["cliphist", "store"], input=highlighted.encode())
@@ -68,9 +64,7 @@ def select_from_history():
     try:
         list_process = subprocess.Popen(["cliphist", "list"], stdout=subprocess.PIPE)
 
-        fuzzel_process = subprocess.Popen(
-            ["fuzzel", "--dmenu"], stdin=list_process.stdout, stdout=subprocess.PIPE
-        )
+        fuzzel_process = subprocess.Popen(["fuzzel", "--dmenu"], stdin=list_process.stdout, stdout=subprocess.PIPE)
         list_process.stdout.close()
 
         selected = fuzzel_process.communicate()[0].decode().strip()
@@ -78,9 +72,7 @@ def select_from_history():
             send_notification("Clipboard History", "No selection made", "critical")
             return
 
-        decode_process = subprocess.Popen(
-            ["cliphist", "decode"], stdin=subprocess.PIPE, stdout=subprocess.PIPE
-        )
+        decode_process = subprocess.Popen(["cliphist", "decode"], stdin=subprocess.PIPE, stdout=subprocess.PIPE)
         decoded = decode_process.communicate(input=selected.encode())[0]
 
         subprocess.run(["wl-copy"], input=decoded)
@@ -104,9 +96,7 @@ def delete_from_history():
         list_process = subprocess.Popen(["cliphist", "list"], stdout=subprocess.PIPE)
 
         # Select entry to delete using fuzzel
-        fuzzel_process = subprocess.Popen(
-            ["fuzzel", "--dmenu"], stdin=list_process.stdout, stdout=subprocess.PIPE
-        )
+        fuzzel_process = subprocess.Popen(["fuzzel", "--dmenu"], stdin=list_process.stdout, stdout=subprocess.PIPE)
         list_process.stdout.close()
 
         selected = fuzzel_process.communicate()[0].decode().strip()

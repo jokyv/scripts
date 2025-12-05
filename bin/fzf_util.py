@@ -55,9 +55,7 @@ def fzf_find_big_files(file_size):
         ["fd", "-H", ".", os.environ["HOME"], "--size", "+" + file_size],
         stdout=subprocess.PIPE,
     )
-    fzf_process = subprocess.Popen(
-        ["fzf"], stdin=fd_process.stdout, stdout=subprocess.PIPE
-    )
+    fzf_process = subprocess.Popen(["fzf"], stdin=fd_process.stdout, stdout=subprocess.PIPE)
     fd_process.stdout.close()
     selected_file, _ = fzf_process.communicate()
     if selected_file:
@@ -70,12 +68,8 @@ def fzf_empty_files():
 
     find files that have zero size.
     """
-    fd_process = subprocess.Popen(
-        ["fd", "-te", "-H", ".", os.environ["HOME"]], stdout=subprocess.PIPE
-    )
-    fzf_process = subprocess.Popen(
-        ["fzf"], stdin=fd_process.stdout, stdout=subprocess.PIPE
-    )
+    fd_process = subprocess.Popen(["fd", "-te", "-H", ".", os.environ["HOME"]], stdout=subprocess.PIPE)
+    fzf_process = subprocess.Popen(["fzf"], stdin=fd_process.stdout, stdout=subprocess.PIPE)
     fd_process.stdout.close()
     selected_file, _ = fzf_process.communicate()
     if selected_file:
@@ -86,12 +80,8 @@ def fzf_empty_files():
 # NOTE: using bash script for this one
 def fzf_go_to_path():
     """Go to a path from a selection of folders."""
-    fd_process = subprocess.Popen(
-        ["fd", "-td", "-H", "-i", ".", os.environ["HOME"]], stdout=subprocess.PIPE
-    )
-    fzf_process = subprocess.Popen(
-        ["fzf"], stdin=fd_process.stdout, stdout=subprocess.PIPE
-    )
+    fd_process = subprocess.Popen(["fd", "-td", "-H", "-i", ".", os.environ["HOME"]], stdout=subprocess.PIPE)
+    fzf_process = subprocess.Popen(["fzf"], stdin=fd_process.stdout, stdout=subprocess.PIPE)
     fd_process.stdout.close()
     selected_path, _ = fzf_process.communicate()
     if selected_path:
@@ -112,12 +102,8 @@ def fzf_go_to_path():
 
 def fzf_move_file_to_path():
     """Move a file selected via FZF to a path selected by FZF again."""
-    fd_process = subprocess.Popen(
-        ["fd", "-tf", "-H", "-i", ".", os.environ["HOME"]], stdout=subprocess.PIPE
-    )
-    fzf_process = subprocess.Popen(
-        ["fzf"], stdin=fd_process.stdout, stdout=subprocess.PIPE
-    )
+    fd_process = subprocess.Popen(["fd", "-tf", "-H", "-i", ".", os.environ["HOME"]], stdout=subprocess.PIPE)
+    fzf_process = subprocess.Popen(["fzf"], stdin=fd_process.stdout, stdout=subprocess.PIPE)
     fd_process.stdout.close()
     selected_file, _ = fzf_process.communicate()
 
@@ -141,12 +127,8 @@ def fzf_move_file_to_path():
 
 def fzf_copy_file_to_path():
     """Copy a file selected via FZF to a path selected by FZF again."""
-    fd_process = subprocess.Popen(
-        ["fd", "-tf", "-H", "-i", ".", os.environ["HOME"]], stdout=subprocess.PIPE
-    )
-    fzf_process = subprocess.Popen(
-        ["fzf"], stdin=fd_process.stdout, stdout=subprocess.PIPE
-    )
+    fd_process = subprocess.Popen(["fd", "-tf", "-H", "-i", ".", os.environ["HOME"]], stdout=subprocess.PIPE)
+    fzf_process = subprocess.Popen(["fzf"], stdin=fd_process.stdout, stdout=subprocess.PIPE)
     fd_process.stdout.close()
     selected_file, _ = fzf_process.communicate()
 
@@ -170,9 +152,7 @@ def fzf_copy_file_to_path():
 
 def fzf_open_file_from_path():
     """Open a file selected via FZF using helix editor."""
-    fd_output = subprocess.Popen(
-        ["fd", "-tf", "-H", "-i", ".", os.environ["HOME"]], stdout=subprocess.PIPE
-    )
+    fd_output = subprocess.Popen(["fd", "-tf", "-H", "-i", ".", os.environ["HOME"]], stdout=subprocess.PIPE)
     selected_file = subprocess.Popen(
         ["fzf", "--preview", "bat --style=numbers --color=always {}"],
         stdin=fd_output.stdout,
@@ -190,9 +170,7 @@ def fzf_find_my_scripts():
     """Select a script from multiple script folders using FZF."""
     home = os.environ["HOME"]
     search_paths = [os.path.join(home, "scripts/bin")]
-    fd_output = subprocess.Popen(
-        ["fd", "-tf", "."] + search_paths, stdout=subprocess.PIPE
-    )
+    fd_output = subprocess.Popen(["fd", "-tf", "."] + search_paths, stdout=subprocess.PIPE)
 
     selected_script = subprocess.Popen(
         ["fzf", "--preview", "bat --style=numbers --color=always {}"],
@@ -238,9 +216,7 @@ def fzf_empty_file_from_trash():
 # -----------------------------------------------
 
 if __name__ == "__main__":
-    parser = argparse.ArgumentParser(
-        prog="FZF Utility", description="Utility CLI for FZF custom commands"
-    )
+    parser = argparse.ArgumentParser(prog="FZF Utility", description="Utility CLI for FZF custom commands")
 
     parser.add_argument("-fp", "--file_phrase", action="store_true")
     parser.add_argument("-bf", "--big_files", action="store_true")

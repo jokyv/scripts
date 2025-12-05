@@ -5,7 +5,7 @@
 fzf_go_to_path() {
     local dir
     dir=$(fd -td -H -i . "$HOME" | fzf --preview 'eza --color=always --icons=always --long --all --group-directories-first --git {}')
-    
+
     if [[ -n "$dir" ]]; then
         echo "$dir"
     else

@@ -7,7 +7,7 @@ git_auto_commit() {
   PATHS=("$HOME/repos/xxx/")
 
   for path in ${PATHS[@]}
-  do 
+  do
   cd $path
   git pull
 
@@ -58,7 +58,7 @@ git_pull_all_git_dirs() {
   wait $pids
 }
 
-# A simple for loop that searches the git status of all the git dirs 
+# A simple for loop that searches the git status of all the git dirs
 # except for .cache, .local/share, cargo
 # ----------------------------------------------------------------------------
 git_status_all_git_dirs() {
@@ -107,10 +107,10 @@ git_commit_workflow() {
   echo "...proceeding with git add, commit and push"
   # git add everything
   git add -A
-  # commit change with message $1 but be quiet 
+  # commit change with message $1 but be quiet
   git commit -q -m "$1"
   # git push quiet mode
-  git push -q 
+  git push -q
   # check git status
   echo "...below is the current git status of the repo"
   git status -sb
@@ -119,7 +119,7 @@ git_commit_workflow() {
 # Get a nice graph with git repo commits
 # ----------------------------------------------------------------------------
 git_log_graph() {
-  git log --graph --abbrev-commit --decorate --format=format:'%C(bold green)%h%C(reset) - %C(bold cyan)%aD%C(reset) 
+  git log --graph --abbrev-commit --decorate --format=format:'%C(bold green)%h%C(reset) - %C(bold cyan)%aD%C(reset)
 %C(bold yellow)(%ar)%C(reset)%C(auto)%d%C(reset)%n''%C(white)%s%C(reset) %C(dim white)- %an%C(reset)' --all
 }
 

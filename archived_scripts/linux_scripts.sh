@@ -42,7 +42,7 @@ function ask() {
 }
 
 # -----------------------------------------------
-# Scripl that updates pacman apps and git pull all repos 
+# Scripl that updates pacman apps and git pull all repos
 # for daily morning usage
 # -----------------------------------------------
 
@@ -61,7 +61,7 @@ daily_updates() {
       git_pull_all_git_dirs
     else
       echo "...NO 'git pull all' right now!"
-    fi 
+    fi
   fi
 }
 
@@ -121,7 +121,7 @@ weekly_updates() {
     echo '::remove with rm -rf .cache/*'
     cd $HOME/.cache/
     erd --layout flat --disk-usage block --no-ignore --hidden --level 1 --sort size
-  
+
 
     echo ''
     echo '::check how big is your journal'
@@ -147,7 +147,7 @@ weekly_updates() {
 
     read -p "Do you want to commit your wallpapers and notes? " yn
       case $yn in
-        [Yy]* ) 
+        [Yy]* )
           git_auto_commit "$HOME/pics/wallpapers/" &&
           git_auto_commit "$HOME/repos/xxx/";;
         [Nn]* ) echo "...NO "git commit" right now!";;
@@ -160,7 +160,7 @@ weekly_updates() {
 # rename files in bulk
 # ----------------------------------------------------------------------------
 bulk_rename() {
-  # TODO: 
+  # TODO:
   # use xargs -i touch {}.png etc to rename the files
 
   read -t 10 -p "Enter a phrase: " phrase
@@ -193,17 +193,17 @@ check_driver() {
 # fkill - kill processes - list only the ones you can kill.
 # ----------------------------------------------------------------------------
 fkill() {
-  local pid 
+  local pid
   if [ "$UID" != "0" ]; then
     pid=$(ps -f -u $UID | sed 1d | fzf -m | awk '{print $2}')
   else
     pid=$(ps -ef | sed 1d | fzf -m | awk '{print $2}')
-  fi  
+  fi
   if [ "x$pid" != "x" ]
   then
     echo $pid | xargs kill -${1:-9}
-  fi  
-}                  
+  fi
+}
 
 # Find the weather in Singapore
 # ----------------------------------------------------------------------------
@@ -247,7 +247,7 @@ pip_update() {
     echo ""
     for library in $library_list; do
       echo ""
-      pip install -U $library 
+      pip install -U $library
       echo ""
     done
   else echo "::All python libraries are up to date"

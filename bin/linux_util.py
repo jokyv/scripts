@@ -176,9 +176,7 @@ def mkd(directory):
     due to subprocess isolation.
     """
     try:
-        os.makedirs(
-            directory, exist_ok=True
-        )  # Create the directory if it doesn't exist
+        os.makedirs(directory, exist_ok=True)  # Create the directory if it doesn't exist
         os.chdir(directory)  # Change to the newly created directory
         print(f"Changed directory to: {os.getcwd()}")
     except Exception as e:
@@ -197,9 +195,7 @@ def hours_since_last_commit():
         now = int(time.time())
 
         # Get the last commit time in seconds since the epoch
-        last_commit = subprocess.check_output(
-            ["git", "log", "--pretty=format:%at", "-1"], text=True
-        ).strip()
+        last_commit = subprocess.check_output(["git", "log", "--pretty=format:%at", "-1"], text=True).strip()
 
         # Calculate the difference in seconds
         seconds_since_last_commit = now - int(last_commit)
@@ -214,13 +210,11 @@ def hours_since_last_commit():
 
 
 if __name__ == "__main__":
-    parser = argparse.ArgumentParser(
-        prog="Linux Utility", description="Utility CLI for Linux custom commands"
-    )
+    parser = argparse.ArgumentParser(prog="Linux Utility", description="Utility CLI for Linux custom commands")
     parser.add_argument("-sb", "--source_bash_profile", action="store_true")
     parser.add_argument("-cdd", "--cd_with_eza", action="store_true")
     parser.add_argument("-hlc", "--hours_since_last_commit", action="store_true")
-    parser.add_argument("-wth", "--weather", action="store_true")
+    parser.add_argument("-with", "--weather", action="store_true")
 
     args = parser.parse_args()
     if args.source_bash_profile:

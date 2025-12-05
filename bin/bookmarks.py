@@ -39,10 +39,7 @@ def get_browser_bookmarks(browser: str) -> Union[List[Tuple[str, str]], List[str
             config.read(profiles_ini)
 
             for section in config.sections():
-                if (
-                    section.startswith("Profile")
-                    and config.get(section, "Default", fallback="0") == "1"
-                ):
+                if section.startswith("Profile") and config.get(section, "Default", fallback="0") == "1":
                     path = config.get(section, "Path", fallback="")
                     if path:
                         profile_path = firefox_dir / path
@@ -84,12 +81,8 @@ def get_browser_bookmarks(browser: str) -> Union[List[Tuple[str, str]], List[str
     elif browser == "brave":
         # Try multiple possible paths for Brave bookmarks
         possible_paths = [
-            Path(
-                "~/.config/BraveSoftware/Brave-Browser/Default/Bookmarks"
-            ).expanduser(),
-            Path(
-                "~/.config/BraveSoftware/Brave-Browser/Profile 1/Bookmarks"
-            ).expanduser(),
+            Path("~/.config/BraveSoftware/Brave-Browser/Default/Bookmarks").expanduser(),
+            Path("~/.config/BraveSoftware/Brave-Browser/Profile 1/Bookmarks").expanduser(),
             Path("~/.config/brave/Default/Bookmarks").expanduser(),
         ]
 
@@ -100,9 +93,7 @@ def get_browser_bookmarks(browser: str) -> Union[List[Tuple[str, str]], List[str
                 break
 
         if not bookmarks_path:
-            raise FileNotFoundError(
-                "Brave bookmarks file not found in any known location"
-            )
+            raise FileNotFoundError("Brave bookmarks file not found in any known location")
 
         # Parse JSON and extract URLs with titles
         with open(bookmarks_path, "r", encoding="utf-8") as f:
@@ -129,9 +120,7 @@ def get_browser_bookmarks(browser: str) -> Union[List[Tuple[str, str]], List[str
         raise ValueError(f"Unsupported browser: {browser}")
 
 
-def show_bookmarks_with_fuzzel(
-    bookmarks: Union[List[Tuple[str, str]], List[str]], browser: str
-) -> str:
+def show_bookmarks_with_fuzzel(bookmarks: Union[List[Tuple[str, str]], List[str]], browser: str) -> str:
     """
     Display bookmarks using fuzzel and return selected URL.
 

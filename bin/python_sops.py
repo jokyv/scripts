@@ -20,9 +20,7 @@ def decrypt_sops_file(file_path: str) -> dict[Any, Any] | Any:
     """
     try:
         # Use subprocess to run sops decryption
-        decrypted_output = subprocess.run(
-            ["sops", "-d", file_path], capture_output=True, text=True, check=True
-        )
+        decrypted_output = subprocess.run(["sops", "-d", file_path], capture_output=True, text=True, check=True)
 
         # Parse the decrypted YAML
         secrets = yaml.safe_load(decrypted_output.stdout)

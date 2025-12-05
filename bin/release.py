@@ -51,9 +51,7 @@ def run_cmd(cmd, capture_output=False):
     """
     try:
         if capture_output:
-            result = subprocess.run(
-                cmd, shell=True, check=True, text=True, capture_output=True
-            )
+            result = subprocess.run(cmd, shell=True, check=True, text=True, capture_output=True)
             return result.stdout.strip()
         else:
             subprocess.run(cmd, shell=True, check=True)

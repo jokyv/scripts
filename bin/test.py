@@ -80,9 +80,7 @@ console = Console()
 # ===============================================
 
 
-def run_command(
-    cmd: List[str], cwd: Optional[Path] = None, capture_output: bool = True
-) -> Tuple[int, str, str]:
+def run_command(cmd: List[str], cwd: Optional[Path] = None, capture_output: bool = True) -> Tuple[int, str, str]:
     """
     Run a command and return exit code, stdout, stderr.
 
@@ -102,9 +100,7 @@ def run_command(
 
     """
     try:
-        result = subprocess.run(
-            cmd, capture_output=capture_output, text=True, cwd=cwd
-        )
+        result = subprocess.run(cmd, capture_output=capture_output, text=True, cwd=cwd)
         return result.returncode, result.stdout, result.stderr
     except Exception as e:
         return 1, "", str(e)
@@ -127,9 +123,7 @@ def check_large_files(path: Path, size_limit: int = FILE_SIZE_LIMIT) -> List[str
         List of files exceeding size limit
 
     """
-    exit_code, stdout, stderr = run_command(
-        ["fd", "-H", "--size", f"+{size_limit}MB", "-gE", ".git"], cwd=path
-    )
+    exit_code, stdout, stderr = run_command(["fd", "-H", "--size", f"+{size_limit}MB", "-gE", ".git"], cwd=path)
     return stdout.splitlines() if exit_code == 0 else []
 
 
@@ -148,15 +142,11 @@ def get_git_status(path: Path) -> int:
         Number of files with changes
 
     """
-    exit_code, stdout, stderr = run_command(
-        ["git", "status", "--porcelain"], cwd=path
-    )
+    exit_code, stdout, stderr = run_command(["git", "status", "--porcelain"], cwd=path)
     return len(stdout.splitlines()) if exit_code == 0 else 0
 
 
-def find_git_directories(
-    base_path: Path, exclude_patterns: List[str]
-) -> List[Path]:
+def find_git_directories(base_path: Path, exclude_patterns: List[str]) -> List[Path]:
     """
     Find all git directories under base path.
 
@@ -173,9 +163,7 @@ def find_git_directories(
         List of paths containing .git directories
 
     """
-    exit_code, stdout, stderr = run_command(
-        ["fd", "-td", "-HI", "-g", ".git", *exclude_patterns], cwd=base_path
-    )
+    exit_code, stdout, stderr = run_command(["fd", "-td", "-HI", "-g", ".git", *exclude_patterns], cwd=base_path)
 
     if exit_code != 0:
         return []
@@ -258,9 +246,7 @@ def auto_commit(paths: Optional[List[Path]] = None) -> None:
             run_command(["git", "push", "-q"], cwd=path)
 
             display_message("success", "Found changes!")
-            display_message(
-                "success", "git add, git commit and git push performed"
-            )
+            display_message("success", "git add, git commit and git push performed")
             results.append({"path": str(path), "status": "committed & pushed"})
             console.print("")
 
@@ -322,9 +308,7 @@ def clean_up() -> None:
     run_command(["git", "add", "."], capture_output=False)
 
     # Commit them
-    run_command(
-        ["git", "commit", "-m", "Clean up ignored files"], capture_output=False
-    )
+    run_command(["git", "commit", "-m", "Clean up ignored files"], capture_output=False)
 
     # Push
     run_command(["git", "push"], capture_output=False)
@@ -342,14 +326,10 @@ def commit_workflow(commit_message: str) -> None:
         Commit message to use
 
     """
-    display_message(
-        "checking", f"if any file above {CONFIG.file_size_limit} MB exist"
-    )
+    display_message("checking", f"if any file above {CONFIG.file_size_limit} MB exist")
 
     # Get the path to the git folder
-    exit_code, stdout, stderr = run_command(
-        ["git", "rev-parse", "--show-toplevel"]
-    )
+    exit_code, stdout, stderr = run_command(["git", "rev-parse", "--show-toplevel"])
     if exit_code != 0:
         display_message("error", "Not in a git repository")
         return
@@ -360,9 +340,7 @@ def commit_workflow(commit_message: str) -> None:
     big_files = check_large_files(dir_path, CONFIG.file_size_limit)
 
     if big_files:
-        display_message(
-            "warning", f"file(s) bigger than {CONFIG.file_size_limit}MB exist.."
-        )
+        display_message("warning", f"file(s) bigger than {CONFIG.file_size_limit}MB exist..")
         display_message("warning", "delete or ignore the below file(s):")
         for file in big_files:
             console.print(f"  {file}")
@@ -401,9 +379,7 @@ def init_template() -> None:
     try:
         # Check if a Git repository already exists
         if Path(".git").exists():
-            raise FileExistsError(
-                "Git repository already exists in this directory."
-            )
+            raise FileExistsError("Git repository already exists in this directory.")
 
         display_message("info", "Initializing git repository")
 
@@ -567,9 +543,7 @@ def push_all_git_dirs() -> None:
             # Run git add, commit and push
             commit_message = "This is an auto generated git commit!"
             run_command(["git", "add", "."], cwd=repo_path)
-            run_command(
-                ["git", "commit", "-qm", commit_message], cwd=repo_path
-            )
+            run_command(["git", "commit", "-qm", commit_message], cwd=repo_path)
             run_command(["git", "push", "-q"], cwd=repo_path)
 
             display_message("success", "git auto commit was pushed!")
@@ -645,9 +619,7 @@ def status_all_git_dirs() -> bool:
             display_message("warning", f"{repo_path.name} repo needs a git commit")
             run_command(["git", "status", "-sb"], cwd=repo_path, capture_output=False)
             changes_exist = True
-            results.append(
-                {"path": str(repo_path), "status": f"{changes_count} changes"}
-            )
+            results.append({"path": str(repo_path), "status": f"{changes_count} changes"})
         else:
             results.append({"path": str(repo_path), "status": "clean"})
 
@@ -776,9 +748,7 @@ def create_and_push_gh_repo(repo_dir: str = ".") -> bool:
         )
         return False
     except Exception as e:
-        display_message(
-            "error", f"An unexpected error occurred during step '{current_step}': {e}"
-        )
+        display_message("error", f"An unexpected error occurred during step '{current_step}': {e}")
         return False
 
 
@@ -794,34 +764,16 @@ def main() -> None:
     Parses command line arguments and executes the requested git operation.
 
     """
-    parser = argparse.ArgumentParser(
-        prog="GIT Utility", description="Utility CLI for GIT custom commands"
-    )
+    parser = argparse.ArgumentParser(prog="GIT Utility", description="Utility CLI for GIT custom commands")
 
-    parser.add_argument(
-        "-cw", "--commit_workflow", action="store_true", help="Execute commit workflow"
-    )
-    parser.add_argument(
-        "-ac", "--auto_commit", action="store_true", help="Auto-commit configured paths"
-    )
-    parser.add_argument(
-        "-cu", "--clean_up", action="store_true", help="Clean up ignored files"
-    )
-    parser.add_argument(
-        "-it", "--init_template", action="store_true", help="Initialize git repository with template"
-    )
-    parser.add_argument(
-        "-lg", "--log_graph", action="store_true", help="Display git log graph"
-    )
-    parser.add_argument(
-        "-pld", "--pull_all_dirs", action="store_true", help="Pull all git directories"
-    )
-    parser.add_argument(
-        "-pud", "--push_all_dirs", action="store_true", help="Push all git directories in repos"
-    )
-    parser.add_argument(
-        "-std", "--status_all_dirs", action="store_true", help="Check status of all git directories"
-    )
+    parser.add_argument("-cw", "--commit_workflow", action="store_true", help="Execute commit workflow")
+    parser.add_argument("-ac", "--auto_commit", action="store_true", help="Auto-commit configured paths")
+    parser.add_argument("-cu", "--clean_up", action="store_true", help="Clean up ignored files")
+    parser.add_argument("-it", "--init_template", action="store_true", help="Initialize git repository with template")
+    parser.add_argument("-lg", "--log_graph", action="store_true", help="Display git log graph")
+    parser.add_argument("-pld", "--pull_all_dirs", action="store_true", help="Pull all git directories")
+    parser.add_argument("-pud", "--push_all_dirs", action="store_true", help="Push all git directories in repos")
+    parser.add_argument("-std", "--status_all_dirs", action="store_true", help="Check status of all git directories")
     parser.add_argument(
         "-crepo",
         "--create_push_gh_repo",
