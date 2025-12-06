@@ -126,15 +126,46 @@ def fkill(signal=9):
         print(f"Command failed with error: {e}", file=sys.stderr)
 
 
-# TODO: that is working!
-def weather(location="Serangoon"):
+def weather(location="Serangoon", detailed=False, multi_city=False):
+    """
+    Get weather information from wttr.in
+
+    Args:
+        location: City name for weather (default: "Serangoon")
+        detailed: Show detailed weather with multiple formats
+        multi_city: Show weather for multiple major cities
+    """
     try:
-        url = f"https://wttr.in/{location}?m2F&format=v2"
-        response = requests.get(url)
-        if response.status_code == 200:
-            print(response.text)
+        if multi_city:
+            # Show multiple cities with format 3
+            cities = ["London", "Athens", "Singapore", "Shanghai"]
+            for city in cities:
+                url = f"https://wttr.in/{city}?format=3"
+                response = requests.get(url)
+                if response.status_code == 200:
+                    print(response.text.strip())
+        elif detailed:
+            # Show multiple formats for the location
+            formats = [1, 2, 3, 4]
+            for fmt in formats:
+                url = f"https://wttr.in/{location}?format={fmt}"
+                response = requests.get(url)
+                if response.status_code == 200:
+                    print(response.text.strip())
+
+            # Also show the full detailed view
+            url = f"https://wttr.in/{location}"
+            response = requests.get(url)
+            if response.status_code == 200:
+                print(response.text)
         else:
-            print(f"Failed to retrieve weather data: {response.status_code}")
+            # Simple format v2 view
+            url = f"https://wttr.in/{location}?m2F&format=v2"
+            response = requests.get(url)
+            if response.status_code == 200:
+                print(response.text)
+            else:
+                print(f"Failed to retrieve weather data: {response.status_code}")
     except requests.RequestException as e:
         print(f"An error occurred: {e}")
 
@@ -215,6 +246,8 @@ if __name__ == "__main__":
     parser.add_argument("-cdd", "--cd_with_eza", action="store_true")
     parser.add_argument("-hlc", "--hours_since_last_commit", action="store_true")
     parser.add_argument("-with", "--weather", action="store_true")
+    parser.add_argument("-wd", "--weather_detailed", action="store_true")
+    parser.add_argument("-wc", "--weather_cities", action="store_true")
 
     args = parser.parse_args()
     if args.source_bash_profile:
@@ -225,3 +258,7 @@ if __name__ == "__main__":
         hours_since_last_commit()
     elif args.weather:
         weather()
+    elif args.weather_detailed:
+        weather(detailed=True)
+    elif args.weather_cities:
+        weather(multi_city=True)

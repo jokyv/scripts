@@ -19,7 +19,7 @@
 - **Python 3.14+**
 - **uv** (recommended for dependency management)
 - **NixOS** (primary) or **Arch Linux** (secondary)
-- **Wayland** (for clipboard utilities)
+- **Wayland** (display server)
 
 ### Installation
 
@@ -28,11 +28,14 @@
 git clone https://github.com/jokyv/scripts.git
 cd scripts
 
-# Install dependencies with uv
+# Install runtime dependencies only
+uv sync
+
+# OR for development (includes linting, testing tools)
 uv sync --all-groups
 
 # Add to your PATH (add to ~/.bashrc or ~/.zshrc)
-export PATH="$(pwd)/bin:$PATH"
+export PATH="$HOME/scripts/bin:$PATH"
 
 # Source your shell configuration
 source ~/.bashrc  # or ~/.zshrc
