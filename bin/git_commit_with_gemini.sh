@@ -16,7 +16,7 @@ PROMPT="Based on the following git diff, write a concise and descriptive commit 
 $CHANGES"
 
 # Call the Gemini CLI and capture the output
-COMMIT_MSG=$(gemini -p "$PROMPT")
+COMMIT_MSG=$(echo "$PROMPT" | gemini -e "")
 
 # Check if the commit message is empty
 if [ -z "$COMMIT_MSG" ]; then
