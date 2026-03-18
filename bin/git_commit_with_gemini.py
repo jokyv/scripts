@@ -37,7 +37,8 @@ def generate_commit_message(diff: str) -> str:
 
     try:
         result = subprocess.run(
-            ["gemini", "-p", prompt],
+            ["gemini", "-e", ""],
+            input=prompt,
             capture_output=True,
             text=True,
             check=True,
