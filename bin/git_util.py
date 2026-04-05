@@ -50,11 +50,14 @@ class GitConfig:
 
     def __post_init__(self):
         if self.paths is None:
+            self.paths = []
             notes_path = ps.get_secret("notes_path")
-            self.paths = [
-                HOME / notes_path,
-                HOME / "pics" / "wallpapers",
-            ]
+            if notes_path:
+                self.paths.append(HOME / notes_path)
+            tasks_path = ps.get_secret("tasks_path")
+            if tasks_path:
+                self.paths.append(HOME / tasks_path)
+            self.paths.append(HOME / "pics" / "wallpapers")
         if self.exclude_dirs is None:
             self.exclude_dirs = [
                 "-gE",
