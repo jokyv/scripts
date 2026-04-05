@@ -38,7 +38,8 @@ repos:
             .*\.csv|
             .*\.html|
             .*\.ods|
-            .*\.lock
+            .*\.lock|
+            secrets\.enc\.yaml
           )$
 
   # SECRET SCANNING TOOLS - DISABLED FOR PERFORMANCE

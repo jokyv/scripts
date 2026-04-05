@@ -8,13 +8,12 @@ commits, status checks, and repository initialization.
 """
 
 import argparse
-import os
 import subprocess
 import sys
 from dataclasses import dataclass
 from datetime import datetime
 from pathlib import Path
-from typing import List, Optional, Tuple
+from typing import Optional
 
 import python_sops as ps
 from messaging import display_message
@@ -45,8 +44,8 @@ class GitConfig:
 
     """
 
-    paths: List[Path] = None
-    exclude_dirs: List[str] = None
+    paths: list[Path] = None
+    exclude_dirs: list[str] = None
     file_size_limit: int = FILE_SIZE_LIMIT
 
     def __post_init__(self):
@@ -80,7 +79,7 @@ console = Console()
 # ===============================================
 
 
-def run_command(cmd: List[str], cwd: Optional[Path] = None, capture_output: bool = True) -> Tuple[int, str, str]:
+def run_command(cmd: list[str], cwd: Optional[Path] = None, capture_output: bool = True) -> tuple[int, str, str]:
     """
     Run a command and return exit code, stdout, stderr.
 
@@ -106,7 +105,7 @@ def run_command(cmd: List[str], cwd: Optional[Path] = None, capture_output: bool
         return 1, "", str(e)
 
 
-def check_large_files(path: Path, size_limit: int = FILE_SIZE_LIMIT) -> List[str]:
+def check_large_files(path: Path, size_limit: int = FILE_SIZE_LIMIT) -> list[str]:
     """
     Check for files exceeding size limit in repository.
 
@@ -146,7 +145,7 @@ def get_git_status(path: Path) -> int:
     return len(stdout.splitlines()) if exit_code == 0 else 0
 
 
-def find_git_directories(base_path: Path, exclude_patterns: List[str]) -> List[Path]:
+def find_git_directories(base_path: Path, exclude_patterns: list[str]) -> list[Path]:
     """
     Find all git directories under base path.
 
@@ -183,7 +182,7 @@ def find_git_directories(base_path: Path, exclude_patterns: List[str]) -> List[P
 # ===============================================
 
 
-def auto_commit(paths: Optional[List[Path]] = None) -> None:
+def auto_commit(paths: Optional[list[Path]] = None) -> None:
     """
     Automatically commit and push changes in specified repositories.
 
@@ -254,7 +253,7 @@ def auto_commit(paths: Optional[List[Path]] = None) -> None:
     _display_auto_commit_summary(results)
 
 
-def _display_auto_commit_summary(results: List[dict]) -> None:
+def _display_auto_commit_summary(results: list[dict]) -> None:
     """
     Display summary table of auto-commit results.
 
@@ -467,7 +466,7 @@ def pull_all_git_dirs() -> None:
     _display_pull_summary(results)
 
 
-def _display_pull_summary(results: List[dict]) -> None:
+def _display_pull_summary(results: list[dict]) -> None:
     """
     Display summary table of pull results.
 
@@ -550,7 +549,7 @@ def push_all_git_dirs() -> None:
     _display_push_summary(results)
 
 
-def _display_push_summary(results: List[dict]) -> None:
+def _display_push_summary(results: list[dict]) -> None:
     """
     Display summary table of push results.
 
@@ -624,7 +623,7 @@ def status_all_git_dirs() -> bool:
     return changes_exist
 
 
-def _display_status_summary(results: List[dict]) -> None:
+def _display_status_summary(results: list[dict]) -> None:
     """
     Display summary table of status check results.
 
