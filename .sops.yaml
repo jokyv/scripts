@@ -1,0 +1,3 @@
+creation_rules:
+  - path_regex: secrets(\.enc)?\.(yaml|json)$
+    age: "age1ztfa88hexsumqz9vjpmfmxzg5crhrjrpy49hlkk02suqmd8a34uqw6mpmk"
