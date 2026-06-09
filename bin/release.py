@@ -70,8 +70,8 @@ def get_latest_tag():
         The latest tag name, or None if no tags exist or an error occurs
     """
     try:
-        latest_tag = run_cmd("git describe --tags --abbrev=0", capture_output=True)
-        return latest_tag
+        latest_tag_list = run_cmd("git tag --sort=-v:refname | head -1", capture_output=True)
+        return latest_tag_list if latest_tag_list else None
     except SystemExit as e:
         print(f"❌ Failed to get latest tag: {e}")
         return None
@@ -125,6 +125,18 @@ def main():
     Guides the user through creating a new semantic version release,
     generating a changelog, and pushing the changes to the repository.
     """
+    import argparse
+
+    parser = argparse.ArgumentParser(description="Create a new release")
+    parser.add_argument(
+        "release_type",
+        nargs="?",
+        choices=["major", "minor", "patch"],
+        help="Release type (omit for interactive prompt)",
+    )
+    parser.add_argument("--yes", "-y", action="store_true", help="Skip confirmation prompt")
+    args = parser.parse_args()
+
     # Ensure we're in the repository root
     change_to_repo_root()
 
@@ -135,22 +147,25 @@ def main():
     else:
         print("ℹ️  No existing tags found. Starting from initial version.")
 
-    # 2. Ask for release type
-    while True:
-        release_type = input("Enter release type (major/minor/patch): ").strip().lower()
-        if release_type in ["major", "minor", "patch"]:
-            break
-        print("❌ Please enter 'major', 'minor', or 'patch'")
+    # 2. Get release type
+    release_type = args.release_type
+    if not release_type:
+        while True:
+            release_type = input("Enter release type (major/minor/patch): ").strip().lower()
+            if release_type in ["major", "minor", "patch"]:
+                break
+            print("❌ Please enter 'major', 'minor', or 'patch'")
 
     # 3. Get the suggested version based on release type
     version = suggest_next_version(release_type, latest_tag)
     print(f"📦 Next version: {version}")
 
     # 4. Confirm
-    confirm = input(f"Proceed with release '{version}'? (yes/no): ").strip().lower()
-    if confirm != "yes":
-        print("🚫 Release aborted.")
-        sys.exit(0)
+    if not args.yes:
+        confirm = input(f"Proceed with release '{version}'? (yes/no): ").strip().lower()
+        if confirm != "yes":
+            print("🚫 Release aborted.")
+            sys.exit(0)
 
     # 5. Generate changelog with git-cliff
     print("📝 Generating changelog ...")
