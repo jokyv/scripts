@@ -1,3 +1,24 @@
+## [0.7.0] - 2026-06-09
+
+### 🚀 Features
+
+- Remove git-crypt encryption for documentation\n\n- Remove filter from .gitattributes\n- Decrypt README.md to plaintext for GitHub rendering
+- *(security)* Migrate to SOPS with age encryption
+- *(bin)* Add CLI args to release.py, add webapp.py desktop manager
+
+### 🐛 Bug Fixes
+
+- Syntax error in _display_status_summary\n\nexclude secrets.enc.yaml from typos check
+
+### 🚜 Refactor
+
+- *(scripts)* Migrate shell utilities to Python implementations
+- *(scripts)* Standardize gemini CLI with stdin
+- Add tasks_path to auto_commit paths alongside notes_path
+
+### 📚 Documentation
+
+- *(docs)* Update changelog formatting
 ## [0.6.0] - 2025-12-12
 
 ### 🚀 Features
@@ -8,12 +29,12 @@
 - Enhance messaging script with rich UI components and CLI support
 - Add nix flake health monitoring tool
 - Add "error" message level as alias for "failure" in messaging module
-- _(git)_ Sort git status results to show changes first
+- *(git)* Sort git status results to show changes first
 - Refactor update_wall.sh for daemonized and configurable wallpaper management
 - Enhance `python_pip_update.py` with rich output and detailed summaries
 - Highlight latest version in green for outdated packages
 - Add auto-rotate command and configurable interval support
-- _(logging)_ Add persistent file-based logging with fallback to /tmp
+- *(logging)* Add persistent file-based logging with fallback to /tmp
 - Improve nix flake health checker with batch processing and better UX
 - Add modern Python development tooling setup
 - Add explicit project dependencies and improve deptry configuration
@@ -61,7 +82,7 @@
 - Update functionality for git pull for list of repos
 - Improve type hints
 - Apply code formatting and fix trailing whitespace
-
+- *(release)* Update changelog for v0.6.0
 ## [0.5.0] - 2025-10-06
 
 ### 🚀 Features
@@ -92,15 +113,14 @@
 ### ⚙️ Miscellaneous Tasks
 
 - Set git repo root as working directory in release script
-- _(release)_ Update changelog for v0.4.0
+- *(release)* Update changelog for v0.4.0
 - Standardize subprocess call formatting
-- _(release)_ Update changelog for v0.5.0
-
+- *(release)* Update changelog for v0.5.0
 ## [0.4.0] - 2025-08-31
 
 ### 🚀 Features
 
-- _(git)_ Add script to generate commit messages with AI
+- *(git)* Add script to generate commit messages with AI
 - Warn about uncommitted changes in shutdown
 - Add shutdown notifications
 - Enable actual system shutdown in logout script
@@ -140,13 +160,12 @@
 - Remove unused apps and scripts, update bookmarks script
 - Make app_launch.py executable
 - Move launch script to archived_scripts
-- _(release)_ Update changelog for v0.4.0
-
+- *(release)* Update changelog for v0.4.0
 ## [0.3.0] - 2025-04-13
 
 ### 🚀 Features
 
-- _(python_profject_template)_ Added more notes to remember
+- *(python_profject_template)* Added more notes to remember
 - Add calculator and stopwatch apps with dark theme using ttkbootstrap
 - Add function to create and push a GitHub repository.
 
@@ -157,47 +176,45 @@
 ### 📚 Documentation
 
 - Restructure README with improved script organization and documentation
-
 ## [0.2.0] - 2025-02-05
 
 ### 🚀 Features
 
-- _(define_word.sh)_ Sample script of checking a word's meaning
-- _(weather)_ Sample code for wttr.in
-- _(linux_util.py)_ Add parameter `weather`
-- _(define_word.sh)_ Changed parameter for `notify-send`
-- _(clip_hist.sh)_ Add script to manage clipboard history
-- _(my_logout.sh)_ Add uptime to the script
-- _(clip_hist.sh)_ Archiving this bash script
-- _(clip_hist)_ Re-creating the script in python
-- _(git_util.py)_ Small wording change
-- _(git_util.py)_ Small wording change
+- *(define_word.sh)* Sample script of checking a word's meaning
+- *(weather)* Sample code for wttr.in
+- *(linux_util.py)* Add parameter `weather`
+- *(define_word.sh)* Changed parameter for `notify-send`
+- *(clip_hist.sh)* Add script to manage clipboard history
+- *(my_logout.sh)* Add uptime to the script
+- *(clip_hist.sh)* Archiving this bash script
+- *(clip_hist)* Re-creating the script in python
+- *(git_util.py)* Small wording change
+- *(git_util.py)* Small wording change
 - Add delete command to clip_hist.py
-- _(.gitignore)_ Update files for .gitignore
+- *(.gitignore)* Update files for .gitignore
 - Add large file check to auto_commit function
 
 ### 🐛 Bug Fixes
 
-- _(my_logout.sh)_ Removed the sudo does not need it
-- _(python_code_init.py)_ Fix the path of the template
-- _(git_util.py)_ Fd command is now fixed
-- _(git_util.py)_ Too many empty lines when print, removing some
+- *(my_logout.sh)* Removed the sudo does not need it
+- *(python_code_init.py)* Fix the path of the template
+- *(git_util.py)* Fd command is now fixed
+- *(git_util.py)* Too many empty lines when print, removing some
 
 ### 🚜 Refactor
 
-- _(python_pip_update.py)_ Grouping libraries depending of their usage
-- _(clip_hist.py)_ Linting
+- *(python_pip_update.py)* Grouping libraries depending of their usage
+- *(clip_hist.py)* Linting
 
 ### 📚 Documentation
 
-- _(CHANGELOG.md)_ Updated changelog file
-
+- *(CHANGELOG.md)* Updated changelog file
 ## [0.1.0] - 2024-12-27
 
 ### 🚀 Features
 
-- _(util)_ Add dprint and typos configs
+- *(util)* Add dprint and typos configs
 
 ### 📚 Documentation
 
-- _(README.md)_ Update docs
+- *(README.md)* Update docs
