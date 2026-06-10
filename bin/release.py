@@ -4,6 +4,7 @@ import subprocess
 import sys
 import re
 import os
+from pathlib import Path
 
 
 def change_to_repo_root():
@@ -118,6 +119,65 @@ def suggest_next_version(release_type, latest_tag):
     return "v0.1.0"
 
 
+def deduplicate_changelog():
+    """
+    Remove duplicate bullet points within the latest release section of CHANGELOG.md .
+
+    git-cliff sometimes emits duplicate entries. This keeps the first occurrence
+    of each unique bullet within each subsection of the latest release.
+    """
+    try:
+        text = Path("CHANGELOG.md").read_text()
+    except FileNotFoundError:
+        print("⚠️  CHANGELOG.md not found, skipping dedup")
+        return
+
+    lines = text.splitlines(keepends=True)
+
+    # Find latest release section boundaries
+    release_start = None
+    release_end = None
+    for i, line in enumerate(lines):
+        if line.startswith("## [") and release_start is None:
+            release_start = i
+        elif line.startswith("## [") and release_start is not None:
+            release_end = i
+            break
+
+    if release_start is None:
+        print("⚠️  No release section found, skipping dedup")
+        return
+
+    release_end = release_end or len(lines)
+
+    # Deduplicate per subsection within the latest release
+    release_lines = lines[release_start:release_end]
+    seen_bullets = set()
+    out = []
+    removed = 0
+
+    for line in release_lines:
+        stripped = line.strip()
+        if stripped.startswith("### "):
+            seen_bullets = set()
+            out.append(line)
+        elif stripped.startswith("- ") or stripped.startswith("  - "):
+            if stripped not in seen_bullets:
+                seen_bullets.add(stripped)
+                out.append(line)
+            else:
+                removed += 1
+        else:
+            out.append(line)
+
+    if removed:
+        new_text = "".join(lines[:release_start]) + "".join(out) + "".join(lines[release_end:])
+        Path("CHANGELOG.md").write_text(new_text)
+        print(f"🧹 Removed {removed} duplicate entries from changelog")
+    else:
+        print("✓ No duplicates found in changelog")
+
+
 def main():
     """
     Main function to manage the release process.
@@ -170,6 +230,9 @@ def main():
     # 5. Generate changelog with git-cliff
     print("📝 Generating changelog ...")
     run_cmd(f"git cliff --tag {version} -o CHANGELOG.md")
+
+    # 5b. Deduplicate changelog (inside latest release section)
+    deduplicate_changelog()
 
     # 6. Commit updated changelog
     print("📦 Committing changelog ...")
