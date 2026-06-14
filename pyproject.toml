@@ -7,9 +7,9 @@ requires-python = ">=3.14"
 authors = [{ name = "John Kyvetos", email = "johnkyvetos@gmail.com" }]
 # add dependencies for this project
 dependencies = [
-    "rich~=13.0",
-    "requests~=2.25",
-    "pyyaml~=6.0",
+  "rich~=13.0",
+  "requests~=2.25",
+  "pyyaml~=6.0",
 ]
 
 [tool.uv]
@@ -25,9 +25,9 @@ build-backend = "hatchling.build"
 # Run 'uv sync --all-groups' for all groups
 # Run 'uv sync --group dev' for only dev
 dev = [
-    "pre-commit>=4.5.0",
-    "pytest",
-    "pytest-cov",
+  "pre-commit>=4.5.0",
+  "pytest",
+  "pytest-cov",
 ]
 # Run 'uv sync --group dev --group lint' for only lint
 lint = ["bandit", "deptry", "pre-commit", "ruff", "ty"]
@@ -37,16 +37,5 @@ security = ["detect-secrets", "trufflehog"]
 # add deptry with `uv add --dev deptry`
 # run deptry with `uv run deptry .`
 [tool.deptry]
-per_rule_ignores = { DEP002 = [
-  "deptry",
-  "ruff",
-  "ty",
-  "pytest",
-], DEP001 = [
-  "python_sops",
-  "messaging",
-], DEP003 = [
-  "python_sops",
-  "messaging",
-] }
+per_rule_ignores = { DEP002 = ["deptry", "ruff", "ty", "pytest"], DEP001 = ["python_sops", "messaging"], DEP003 = ["python_sops", "messaging"] }
 exclude = ["archived_scripts/**", ".venv/**"]

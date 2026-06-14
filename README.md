@@ -16,6 +16,7 @@
 ## 🚀 Quick Start
 
 ### Prerequisites
+
 - **Python 3.14+**
 - **uv** (recommended for dependency management)
 - **NixOS** (primary) or **Arch Linux** (secondary)
@@ -59,6 +60,7 @@ scripts/
 ## 🛠️ Core Utilities
 
 ### 🐍 Python Scripts
+
 - **`fzf_util.py`** - Fuzzy file operations (find, move, copy, trash)
 - **`git_util.py`** - Automated git workflows (commit, pull, status)
 - **`linux_util.py`** - System monitoring (processes, weather, disk usage)
@@ -68,6 +70,7 @@ scripts/
 - **`dfn.py`** - Date-formatted filename generator
 
 ### 🔧 Shell Scripts
+
 - **`bash_util.sh`** - Shared bash utility functions
 - **`take_screenshot.sh`** - Screenshot capture utility
 - **`update_wall.sh`** - Wallpaper management
@@ -75,12 +78,14 @@ scripts/
 - **`my_logout.sh`** - Session management
 
 ### 🔒 Security Tools
+
 - **`git_crypt_init.sh`** - Encrypted git repository setup
 - **SOPS integration** - YAML-based secret management
 
 ## 📋 Usage Examples
 
 ### Git Workflow Automation
+
 ```bash
 # Auto-commit all configured repositories
 git_util.py -ac
@@ -93,6 +98,7 @@ git_util.py -cw "Fix: update dependencies"
 ```
 
 ### File Management
+
 ```bash
 # Find and select files with FZF
 fzf_util.py -fp "search phrase"
@@ -105,6 +111,7 @@ fzf_util.py -gp
 ```
 
 ### Clipboard Management (Wayland)
+
 ```bash
 # Show clipboard history
 clip_hist.py -sh
@@ -119,6 +126,7 @@ clip_hist.py -sfh
 ## 🧪 Development
 
 ### Code Quality
+
 This project uses modern Python tooling:
 
 - **`ruff`** - Linting and formatting
@@ -128,6 +136,7 @@ This project uses modern Python tooling:
 - **`pytest`** - Testing framework
 
 ### Running Tests
+
 ```bash
 # Run linting and formatting
 uv run ruff check .
@@ -142,21 +151,23 @@ uv run bandit -r bin/
 
 ## 🖥️ Platform Support
 
-| Platform | Python Scripts | Shell Scripts | Clipboard | Notes |
-|----------|----------------|---------------|-----------|-------|
-| **NixOS** | ✅ | ✅ | ✅ | Primary platform |
-| **Arch Linux** | ✅ | ✅ | ✅ | Fully supported |
-| **macOS** | ✅ | ⚠️ | ❌ | Python only |
-| **Windows** | ⚠️ | ❌ | ❌ | Limited support |
+| Platform       | Python Scripts | Shell Scripts | Clipboard | Notes            |
+| -------------- | -------------- | ------------- | --------- | ---------------- |
+| **NixOS**      | ✅             | ✅            | ✅        | Primary platform |
+| **Arch Linux** | ✅             | ✅            | ✅        | Fully supported  |
+| **macOS**      | ✅             | ⚠️             | ❌        | Python only      |
+| **Windows**    | ⚠️              | ❌            | ❌        | Limited support  |
 
 ## 📦 Dependencies
 
 ### Python Packages
+
 - `rich` - Rich console output
 - `requests` - HTTP requests
 - `pyyaml` - YAML processing
 
 ### System Tools
+
 - `fzf` - Fuzzy finder
 - `fd` - Fast file finder
 - `eza` - Modern ls replacement

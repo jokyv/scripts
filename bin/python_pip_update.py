@@ -77,7 +77,7 @@ def get_installed_packages() -> dict[str, str]:
             if "==" in line:
                 name, version = line.split("==", 1)
                 packages[name.strip()] = version.strip()
-    except (subprocess.CalledProcessError, FileNotFoundError):
+    except subprocess.CalledProcessError, FileNotFoundError:
         dm("ERROR", "Could not retrieve package list. Is 'uv' installed and in your PATH?")
     return packages
 

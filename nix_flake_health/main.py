@@ -263,7 +263,7 @@ def extract_nixpkgs_info(flake_path: Path) -> dict:
 
             return {"branch": branch, "locked_rev": locked_rev, "last_modified": last_modified}
 
-        except (json.JSONDecodeError, KeyError):
+        except json.JSONDecodeError, KeyError:
             return {"branch": "nixos-unstable", "locked_rev": None, "last_modified": None}
 
     finally:
@@ -381,7 +381,7 @@ def read_cache(key: str) -> str | None:
         try:
             with open(cache_path) as f:
                 return json.load(f)
-        except (json.JSONDecodeError, FileNotFoundError):
+        except json.JSONDecodeError, FileNotFoundError:
             return None
     return None
 
@@ -515,7 +515,7 @@ def get_batch_package_versions(
                 if use_cache and version != "not found":
                     cache_key = f"{flake_ref}-{input_name}-{package}"
                     write_cache(cache_key, version)
-        except (json.JSONDecodeError, KeyError):
+        except json.JSONDecodeError, KeyError:
             # Fall back to individual checks
             for package in packages_to_fetch:
                 results[package] = get_package_version(flake_ref, input_name, package, use_cache)
