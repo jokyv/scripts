@@ -659,6 +659,61 @@ def _display_status_summary(results: list[dict]) -> None:
     console.print(table)
 
 
+def git_audit() -> bool:
+    """
+    Run quick git audit commands for current repository.
+
+    Prints churn, owner, bug, velocity, and firefighting signals.
+
+    """
+    exit_code, stdout, stderr = run_command(["git", "rev-parse", "--show-toplevel"], cwd=Path.cwd())
+
+    if exit_code != 0:
+        display_message("error", f"Not inside a git repo: {stderr.strip() or Path.cwd()}")
+        return False
+
+    repo_root = Path(stdout.strip())
+    audit_checks = [
+        (
+            "What Changes the Most",
+            "git log --format=format: --name-only --since='1 year ago' | grep -v '^$' | sort | uniq -c | sort -nr | head -20",
+        ),
+        ("Who Built This", "git shortlog -sn --no-merges HEAD"),
+        (
+            "Where Do Bugs Cluster",
+            "git log -i -E --grep='fix|bug|broken' --name-only --format='' | grep -v '^$' | sort | uniq -c | sort -nr | head -20",
+        ),
+        (
+            "Is This Project Accelerating or Dying",
+            "git log --format='%ad' --date=format:'%Y-%m' | sort | uniq -c",
+        ),
+        (
+            "How Often Is the Team Firefighting",
+            "git log --oneline --since='1 year ago' | grep -iE 'revert|hotfix|emergency|rollback' || true",
+        ),
+    ]
+
+    console.rule("[bold magenta]Git audit")
+    console.print(f"[dim]Repo: {repo_root}[/dim]")
+
+    for title, command in audit_checks:
+        console.rule(f"[bold cyan]{title}")
+        exit_code, stdout, stderr = run_command(["bash", "-lc", command], cwd=repo_root)
+        output = stdout.strip()
+
+        if output:
+            console.print(output)
+        else:
+            console.print("[dim](none)[/dim]")
+
+        if exit_code != 0 and stderr.strip():
+            display_message("warning", stderr.strip())
+
+        console.print("")
+
+    return True
+
+
 def create_and_push_gh_repo(repo_dir: str = ".") -> bool:
     """
     Create a private GitHub repository and push current branch.
@@ -774,6 +829,7 @@ def main() -> None:
     parser.add_argument("-pld", "--pull_all_dirs", action="store_true", help="Pull all git directories")
     parser.add_argument("-pud", "--push_all_dirs", action="store_true", help="Push all git directories in repos")
     parser.add_argument("-std", "--status_all_dirs", action="store_true", help="Check status of all git directories")
+    parser.add_argument("--audit", action="store_true", help="Run git audit commands for current repo")
     parser.add_argument(
         "-crepo",
         "--create_push_gh_repo",
@@ -794,6 +850,8 @@ def main() -> None:
         init_template()
     elif args.log_graph:
         log_graph()
+    elif args.audit:
+        git_audit()
     elif args.pull_all_dirs:
         pull_all_git_dirs()
     elif args.push_all_dirs:

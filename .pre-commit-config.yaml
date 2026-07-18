@@ -10,7 +10,7 @@ repos:
         name: dprint
         entry: dprint fmt
         language: system
-        types_or: [markdown, yaml]
+        types_or: [markdown, json, toml, yaml]
         require_serial: true
 
   # use the versions from repo's .venv
@@ -47,8 +47,7 @@ repos:
             .*\.csv|
             .*\.html|
             .*\.ods|
-            .*\.lock|
-            secrets\.enc\.yaml
+            .*\.lock
           )$
 
   # SECRET SCANNING TOOLS - DISABLED FOR PERFORMANCE
@@ -98,3 +97,10 @@ repos:
       # Prevent committing to main branch
       # - id: no-commit-to-branch
       #   args: [--branch, main]
+
+  # Conventional Commits enforcement
+  - repo: https://github.com/commitizen-tools/commitizen
+    rev: v4.4.1
+    hooks:
+      - id: commitizen
+        stages: [commit-msg]

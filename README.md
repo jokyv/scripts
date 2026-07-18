@@ -93,6 +93,9 @@ git_util.py -ac
 # Show status of all git directories
 git_util.py -std
 
+# Audit current repo before reading code
+git_util.py --audit
+
 # Commit workflow with safety checks
 git_util.py -cw "Fix: update dependencies"
 ```
