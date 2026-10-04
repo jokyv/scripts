@@ -9,9 +9,8 @@ Usage:
   webapp.py remove <name>
   webapp.py list
 
-Browser note: uses Brave --app= flag for clean app windows.
-Firefox has experimental SSB (browser.ssb.enabled in about:config)
-but not as reliable. Sticking with Brave for now.
+Browser note: uses Brave --app= for clean app windows and native Wayland
+so launchers do not need an X11 DISPLAY environment variable.
 """
 
 import subprocess
@@ -78,7 +77,7 @@ def cmd_add(name: str, url: str, icon_url: str | None = None) -> None:
 Version=1.0
 Name={name}
 Comment={name} - Web App
-Exec={BROWSER} --app={url}
+Exec={BROWSER} --ozone-platform=wayland --app={url}
 Terminal=false
 Type=Application
 Icon={icon}

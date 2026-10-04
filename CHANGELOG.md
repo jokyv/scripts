@@ -1,3 +1,9 @@
+## [Unreleased]
+
+### Bug Fixes
+
+- Launch Brave web apps with native Wayland so Noctalia does not require an X11 `DISPLAY`.
+
 ## [0.7.0] - 2026-06-09
 
 ### 🚀 Features

@@ -126,6 +126,19 @@ clip_hist.py -ah
 clip_hist.py -sfh
 ```
 
+### Web App Launchers
+
+```bash
+webapp.py add "WhatsApp Web" https://web.whatsapp.com
+webapp.py list
+webapp.py remove "WhatsApp Web"
+```
+
+Requires Brave and a Wayland session. Desktop entries use
+`brave --ozone-platform=wayland --app=<url>` so service-based launchers such as
+Noctalia work with `WAYLAND_DISPLAY` even when `DISPLAY` is absent.
+Re-run `add` with the same name and URL to update an older desktop entry.
+
 ## 🧪 Development
 
 ### Code Quality
