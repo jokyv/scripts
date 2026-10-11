@@ -25,6 +25,7 @@ from rich.table import Table
 # ===============================================
 
 HOME = Path.home()
+PROJECTS_PATH = HOME / "projects"
 FILE_SIZE_LIMIT = 50  # in MB
 
 
@@ -220,7 +221,7 @@ def auto_commit(paths: Optional[list[Path]] = None) -> None:
         if big_files:
             display_message(
                 "warning",
-                f"Files larger than {CONFIG.file_size_limit}MB detected, skipping commit",
+                f"CRITICAL: Files larger than {CONFIG.file_size_limit}MB detected in {path}; repository skipped.",
             )
             for file in big_files:
                 display_message("warning", f"Large file: {file}")
@@ -434,7 +435,7 @@ def log_graph() -> None:
 
 def pull_all_git_dirs() -> None:
     """
-    Pull updates for all git repositories under home directory.
+    Pull updates for all git repositories under the projects directory.
 
     Finds all git directories and executes git pull for each.
     Excludes directories specified in CONFIG.exclude_dirs.
@@ -442,7 +443,7 @@ def pull_all_git_dirs() -> None:
     """
     display_message("info", "Pulling updates for all git repositories")
 
-    git_dirs = find_git_directories(HOME, CONFIG.exclude_dirs)
+    git_dirs = find_git_directories(PROJECTS_PATH, CONFIG.exclude_dirs)
 
     if not git_dirs:
         display_message("warning", "No git repositories found")
@@ -504,87 +505,6 @@ def _display_pull_summary(results: list[dict]) -> None:
     console.print(table)
 
 
-def push_all_git_dirs() -> None:
-    """
-    Push changes for all git repositories in repos directory.
-
-    Finds all git directories under ~/repos and pushes any uncommitted changes
-    with an auto-generated commit message.
-
-    """
-    repos_path = HOME / "repos"
-
-    if not repos_path.exists():
-        display_message("error", f"Repos directory not found: {repos_path}")
-        return
-
-    display_message("info", "Finding all git repositories in repos directory")
-
-    git_dirs = find_git_directories(repos_path, CONFIG.exclude_dirs)
-
-    if not git_dirs:
-        display_message("warning", "No git repositories found")
-        return
-
-    display_message("info", f"Found {len(git_dirs)} repositories")
-
-    results = []
-
-    for repo_path in git_dirs:
-        changes_count = get_git_status(repo_path)
-
-        if changes_count > 0:
-            console.print("")
-            display_message("warning", f"{repo_path.name} repo needs a git commit")
-
-            # Run git add, commit and push
-            commit_message = "This is an auto generated git commit!"
-            run_command(["git", "add", "."], cwd=repo_path)
-            run_command(["git", "commit", "-qm", commit_message], cwd=repo_path)
-            run_command(["git", "push", "-q"], cwd=repo_path)
-
-            display_message("success", "git auto commit was pushed!")
-            results.append({"path": str(repo_path), "status": "committed & pushed"})
-        else:
-            results.append({"path": str(repo_path), "status": "no changes"})
-
-    # Display summary
-    _display_push_summary(results)
-
-
-def _display_push_summary(results: list[dict]) -> None:
-    """
-    Display summary table of push results.
-
-    Parameters
-    ----------
-    results : List[dict]
-        List of result dictionaries with path and status
-
-    """
-    if not results:
-        return
-
-    console.print("\n")
-    table = Table(show_header=True, header_style="bold cyan")
-    table.add_column("Repository", style="dim", width=50)
-    table.add_column("Status", justify="center")
-
-    for result in results:
-        status = result["status"]
-        match status:
-            case "committed & pushed":
-                status_text = "[green]✓ committed & pushed[/green]"
-            case "no changes":
-                status_text = "[blue]○ no changes[/blue]"
-            case _:
-                status_text = f"[dim]{status}[/dim]"
-
-        table.add_row(result["path"], status_text)
-
-    console.print(table)
-
-
 def status_all_git_dirs() -> bool:
     """
     Check all git directories for uncommitted changes.
@@ -597,7 +517,7 @@ def status_all_git_dirs() -> bool:
     """
     display_message("info", "Checking status of all git repositories")
 
-    git_dirs = find_git_directories(HOME, CONFIG.exclude_dirs)
+    git_dirs = find_git_directories(PROJECTS_PATH, CONFIG.exclude_dirs)
 
     if not git_dirs:
         display_message("warning", "No git repositories found")
@@ -823,12 +743,16 @@ def main() -> None:
 
     parser.add_argument("-cw", "--commit_workflow", action="store_true", help="Execute commit workflow")
     parser.add_argument("-ac", "--auto_commit", action="store_true", help="Auto-commit configured paths")
+    parser.add_argument("--all", action="store_true", help="Include all repos under ~/projects with --auto_commit")
     parser.add_argument("-cu", "--clean_up", action="store_true", help="Clean up ignored files")
     parser.add_argument("-it", "--init_template", action="store_true", help="Initialize git repository with template")
     parser.add_argument("-lg", "--log_graph", action="store_true", help="Display git log graph")
-    parser.add_argument("-pld", "--pull_all_dirs", action="store_true", help="Pull all git directories")
-    parser.add_argument("-pud", "--push_all_dirs", action="store_true", help="Push all git directories in repos")
-    parser.add_argument("-std", "--status_all_dirs", action="store_true", help="Check status of all git directories")
+    parser.add_argument(
+        "-pld", "--pull_all_dirs", action="store_true", help="Pull all git repositories under ~/projects"
+    )
+    parser.add_argument(
+        "-std", "--status_all_dirs", action="store_true", help="Check status of all git repositories under ~/projects"
+    )
     parser.add_argument("--audit", action="store_true", help="Run git audit commands for current repo")
     parser.add_argument(
         "-crepo",
@@ -843,7 +767,8 @@ def main() -> None:
         commit_message = input("Enter commit message: ")
         commit_workflow(commit_message)
     elif args.auto_commit:
-        auto_commit()
+        paths = find_git_directories(PROJECTS_PATH, CONFIG.exclude_dirs) if args.all else None
+        auto_commit(paths)
     elif args.clean_up:
         clean_up()
     elif args.init_template:
@@ -854,8 +779,6 @@ def main() -> None:
         git_audit()
     elif args.pull_all_dirs:
         pull_all_git_dirs()
-    elif args.push_all_dirs:
-        push_all_git_dirs()
     elif args.status_all_dirs:
         if status_all_git_dirs():
             sys.exit(0)  # Changes exist

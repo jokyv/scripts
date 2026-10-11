@@ -87,10 +87,14 @@ scripts/
 ### Git Workflow Automation
 
 ```bash
-# Auto-commit all configured repositories
+# Auto-commit configured repositories
 git_util.py -ac
 
-# Show status of all git directories
+# Auto-commit all repositories under ~/projects
+git_util.py -ac --all
+
+# Pull or show status for repositories under ~/projects
+git_util.py -pld
 git_util.py -std
 
 # Audit current repo before reading code
@@ -99,6 +103,8 @@ git_util.py --audit
 # Commit workflow with safety checks
 git_util.py -cw "Fix: update dependencies"
 ```
+
+Bulk discovery searches nested repositories under `~/projects`; worktrees and submodules are excluded. `--all` only expands auto-commit when used with `-ac`; `-ac` alone keeps configured paths. Bulk commit/push skips repositories with files larger than 50 MB, prints a CRITICAL warning, and continues with remaining repositories.
 
 ### File Management
 
