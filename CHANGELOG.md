@@ -1,8 +1,18 @@
-## [Unreleased]
+## [1.0.0] - 2026-10-11
 
-### Bug Fixes
+### 🚀 Features
 
-- Launch Brave web apps with native Wayland so Noctalia does not require an X11 `DISPLAY`.
+- Add git repository audit command
+- _(git)_ Unify bulk commit workflow
+
+### 🐛 Bug Fixes
+
+- _(webapp)_ Launch apps with native Wayland
+
+### ⚙️ Miscellaneous Tasks
+
+- _(release)_ Add dprint hook, format changelog, add dedup to release.py
+- Update dprint hook config
 
 ## [0.7.0] - 2026-06-09
 
@@ -16,15 +26,19 @@
 
 - Syntax error in _display_status_summary\n\nexclude secrets.enc.yaml from typos check
 
+### 📚 Documentation
+
+- _(docs)_ Update changelog formatting
+
 ### 🚜 Refactor
 
 - _(scripts)_ Migrate shell utilities to Python implementations
 - _(scripts)_ Standardize gemini CLI with stdin
 - Add tasks_path to auto_commit paths alongside notes_path
 
-### 📚 Documentation
+### ⚙️ Miscellaneous Tasks
 
-- _(docs)_ Update changelog formatting
+- _(release)_ Update changelog for v0.7.0
 
 ## [0.6.0] - 2025-12-12
 
@@ -52,11 +66,11 @@
 - Adjust wallpaper update interval and formatting
 - Version fetching in nix_flake_health script
 
-### 💼 Other
+### 📚 Documentation
 
-- Improve comment style and consistency in update_wall.sh
-- Improve code formatting and readability in python_pip_update.py
-- Improve logging by stripping rich markup from file logs
+- Standardize changelog formatting with underscores for tags
+- Add comprehensive docstrings to all Python functions
+- Modernize README with comprehensive documentation
 
 ### 🚜 Refactor
 
@@ -68,12 +82,6 @@
 - Modernize git_util.py with type hints, pathlib, and dataclass config
 - Move cache TTL to global variable for easier modification
 - Use cleaner caret syntax for dependency versions
-
-### 📚 Documentation
-
-- Standardize changelog formatting with underscores for tags
-- Add comprehensive docstrings to all Python functions
-- Modernize README with comprehensive documentation
 
 ### 🎨 Styling
 
@@ -91,6 +99,12 @@
 - Apply code formatting and fix trailing whitespace
 - _(release)_ Update changelog for v0.6.0
 
+### 💼 Other
+
+- Improve comment style and consistency in update_wall.sh
+- Improve code formatting and readability in python_pip_update.py
+- Improve logging by stripping rich markup from file logs
+
 ## [0.5.0] - 2025-10-06
 
 ### 🚀 Features
@@ -103,16 +117,16 @@
 
 - Improve error messages with exception details
 
+### 📚 Documentation
+
+- Update function docstrings to numpy style
+
 ### 🚜 Refactor
 
 - Remove duplicate version print in suggest_next_version
 - Improve release script prompts and numbering
 - Simplify version selection in release script
 - Move repo root setup into function called from main
-
-### 📚 Documentation
-
-- Update function docstrings to numpy style
 
 ### 🎨 Styling
 
@@ -179,13 +193,13 @@
 - Add calculator and stopwatch apps with dark theme using ttkbootstrap
 - Add function to create and push a GitHub repository.
 
-### 💼 Other
-
-- Limit git log graph output (A)
-
 ### 📚 Documentation
 
 - Restructure README with improved script organization and documentation
+
+### 💼 Other
+
+- Limit git log graph output (A)
 
 ## [0.2.0] - 2025-02-05
 
@@ -212,14 +226,14 @@
 - _(git_util.py)_ Fd command is now fixed
 - _(git_util.py)_ Too many empty lines when print, removing some
 
+### 📚 Documentation
+
+- _(CHANGELOG.md)_ Updated changelog file
+
 ### 🚜 Refactor
 
 - _(python_pip_update.py)_ Grouping libraries depending of their usage
 - _(clip_hist.py)_ Linting
-
-### 📚 Documentation
-
-- _(CHANGELOG.md)_ Updated changelog file
 
 ## [0.1.0] - 2024-12-27
 
