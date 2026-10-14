@@ -37,7 +37,7 @@ class GitConfig:
     Attributes
     ----------
     paths : List[Path]
-        List of paths to monitor for auto-commits
+        Repository paths; None until configured auto-commit loads them
     exclude_dirs : List[str]
         Directory patterns to exclude from searches
     file_size_limit : int
@@ -45,20 +45,25 @@ class GitConfig:
 
     """
 
-    paths: list[Path] = None
+    paths: list[Path] | None = None
     exclude_dirs: list[str] = None
     file_size_limit: int = FILE_SIZE_LIMIT
 
-    def __post_init__(self):
+    def get_paths(self) -> list[Path]:
+        """Load secret-backed repository paths only when requested."""
         if self.paths is None:
-            self.paths = []
+            paths = []
             notes_path = ps.get_secret("notes_path")
             if notes_path:
-                self.paths.append(HOME / notes_path)
+                paths.append(HOME / notes_path)
             tasks_path = ps.get_secret("tasks_path")
             if tasks_path:
-                self.paths.append(HOME / tasks_path)
-            self.paths.append(HOME / "pics" / "wallpapers")
+                paths.append(HOME / tasks_path)
+            paths.append(HOME / "pics" / "wallpapers")
+            self.paths = paths
+        return self.paths
+
+    def __post_init__(self):
         if self.exclude_dirs is None:
             self.exclude_dirs = [
                 "-gE",
@@ -186,22 +191,40 @@ def find_git_directories(base_path: Path, exclude_patterns: list[str]) -> list[P
 # ===============================================
 
 
-def auto_commit(paths: Optional[list[Path]] = None) -> None:
+def _commit_and_push(path: Path, commit_message: str, add_option: str) -> str | None:
+    """Run the commit chain, returning the failed step or None on success."""
+    commands = [
+        ["git", "add", add_option],
+        ["git", "commit", "-q", "-m", commit_message],
+        ["git", "push", "-q"],
+    ]
+    for command in commands:
+        exit_code, stdout, stderr = run_command(command, cwd=path)
+        if exit_code != 0:
+            step = command[1]
+            detail = stderr.strip() or stdout.strip() or f"exit code {exit_code}"
+            display_message("error", f"git {step} failed in {path}: {detail}")
+            return step
+    return None
+
+
+def auto_commit(paths: list[Path] | None = None) -> bool:
     """
     Automatically commit and push changes in specified repositories.
 
-    Skips commit if any files over size limit are detected in the repo.
+    Skips oversized repositories; returns False if any repository fails.
 
     Parameters
     ----------
     paths : Optional[List[Path]], optional
-        List of repository paths to check, by default uses CONFIG.paths
+        List of repository paths to check; omitted paths load configured defaults
 
     """
     if paths is None:
-        paths = CONFIG.paths
+        paths = CONFIG.get_paths()
 
     results = []
+    success = True
 
     for path in paths:
         console.rule("[bold red]Repository checks")
@@ -209,6 +232,7 @@ def auto_commit(paths: Optional[list[Path]] = None) -> None:
         if not path.exists():
             display_message("failure", f"Path: {path} does not exist.")
             results.append({"path": str(path), "status": "not found"})
+            success = False
             continue
 
         # Check for large files
@@ -235,18 +259,26 @@ def auto_commit(paths: Optional[list[Path]] = None) -> None:
 
         # Check for changes
         display_message("checking", f"If any changes for repo: {path}")
-        changes_count = get_git_status(path)
+        exit_code, stdout, stderr = run_command(["git", "status", "--porcelain"], cwd=path)
+        if exit_code != 0:
+            detail = stderr.strip() or stdout.strip() or f"exit code {exit_code}"
+            display_message("error", f"git status failed in {path}: {detail}")
+            results.append({"path": str(path), "status": "failed (status)"})
+            success = False
+            continue
+        changes_count = len(stdout.splitlines())
 
         if changes_count == 0:
             display_message("success", "Nothing to commit, moving on!")
             results.append({"path": str(path), "status": "no changes"})
             console.print("")
         else:
-            # Perform git operations
-            run_command(["git", "add", "."], cwd=path)
             commit_message = f"auto script backup at: {datetime.now().strftime('%d-%m-%Y %H:%M:%S')}"
-            run_command(["git", "commit", "-q", "-m", commit_message], cwd=path)
-            run_command(["git", "push", "-q"], cwd=path)
+            failed_step = _commit_and_push(path, commit_message, ".")
+            if failed_step is not None:
+                results.append({"path": str(path), "status": f"failed ({failed_step})"})
+                success = False
+                continue
 
             display_message("success", "Found changes!")
             display_message("success", "git add, git commit and git push performed")
@@ -255,6 +287,7 @@ def auto_commit(paths: Optional[list[Path]] = None) -> None:
 
     # Display summary table
     _display_auto_commit_summary(results)
+    return success
 
 
 def _display_auto_commit_summary(results: list[dict]) -> None:
@@ -286,6 +319,8 @@ def _display_auto_commit_summary(results: list[dict]) -> None:
                 status_text = "[yellow]⚠ skipped (large files)[/yellow]"
             case "not found":
                 status_text = "[red]✗ not found[/red]"
+            case status if status.startswith("failed ("):
+                status_text = f"[red]✗ {status}[/red]"
             case _:
                 status_text = f"[dim]{status}[/dim]"
 
@@ -319,9 +354,9 @@ def clean_up() -> None:
     display_message("success", "Cleanup completed and pushed")
 
 
-def commit_workflow(commit_message: str) -> None:
+def commit_workflow(commit_message: str) -> bool:
     """
-    Execute standard commit workflow with checks.
+    Execute standard commit workflow with checks; return whether it succeeded.
 
     Parameters
     ----------
@@ -334,8 +369,8 @@ def commit_workflow(commit_message: str) -> None:
     # Get the path to the git folder
     exit_code, stdout, stderr = run_command(["git", "rev-parse", "--show-toplevel"])
     if exit_code != 0:
-        display_message("error", "Not in a git repository")
-        return
+        display_message("error", f"Cannot locate git repository: {stderr.strip() or stdout.strip() or exit_code}")
+        return False
 
     dir_path = Path(stdout.strip())
 
@@ -347,23 +382,22 @@ def commit_workflow(commit_message: str) -> None:
         display_message("warning", "delete or ignore the below file(s):")
         for file in big_files:
             console.print(f"  {file}")
-        return
+        return False
 
     display_message("success", "no big files found!")
     display_message("info", "proceeding with git add, commit, and push")
 
-    # Git add everything
-    run_command(["git", "add", "-A"], capture_output=False)
-
-    # Commit change with commit_message
-    run_command(["git", "commit", "-q", "-m", commit_message], capture_output=False)
-
-    # Git push
-    run_command(["git", "push", "-q"], capture_output=False)
+    if _commit_and_push(dir_path, commit_message, "-A") is not None:
+        return False
 
     # Check git status
     display_message("info", "below is the current git status of the repo")
-    run_command(["git", "status", "-sb"], capture_output=False)
+    exit_code, stdout, stderr = run_command(["git", "status", "-sb"], cwd=dir_path)
+    if exit_code != 0:
+        display_message("error", f"git status failed in {dir_path}: {stderr.strip() or stdout.strip() or exit_code}")
+        return False
+    console.print(stdout)
+    return True
 
 
 def init_template() -> None:
@@ -765,10 +799,12 @@ def main() -> None:
 
     if args.commit_workflow:
         commit_message = input("Enter commit message: ")
-        commit_workflow(commit_message)
+        if not commit_workflow(commit_message):
+            sys.exit(1)
     elif args.auto_commit:
         paths = find_git_directories(PROJECTS_PATH, CONFIG.exclude_dirs) if args.all else None
-        auto_commit(paths)
+        if not auto_commit(paths):
+            sys.exit(1)
     elif args.clean_up:
         clean_up()
     elif args.init_template:

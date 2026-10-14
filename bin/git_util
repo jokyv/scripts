@@ -1,0 +1,7 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+script_path=$(readlink -f -- "${BASH_SOURCE[0]}")
+project_root=$(dirname -- "$(dirname -- "$script_path")")
+
+exec uv run --project "$project_root" --locked --no-dev python "$project_root/bin/git_util.py" "$@"

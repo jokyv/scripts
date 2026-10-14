@@ -18,7 +18,7 @@
 ### Prerequisites
 
 - **Python 3.14+**
-- **uv** (recommended for dependency management)
+- **uv** (required for the `git_util` launcher and dependency management)
 - **NixOS** (primary) or **Arch Linux** (secondary)
 - **Wayland** (display server)
 
@@ -42,13 +42,16 @@ export PATH="$HOME/scripts/bin:$PATH"
 source ~/.bashrc  # or ~/.zshrc
 ```
 
+Git commands use the `git_util` launcher, which selects this repository's Python environment through `uv`; no manual virtual-environment activation is needed. Keep `uv` available on the launcher's PATH. For desktop entries or shortcuts, use the absolute path to `bin/git_util`.
+
 ## 📁 Project Structure
 
 ```
 scripts/
 ├── bin/                      # Main executable scripts
 │   ├── fzf_util.py          # Fuzzy file workflows
-│   ├── git_util.py          # Git automation
+│   ├── git_util             # Project-aware Git launcher
+│   ├── git_util.py          # Git implementation (run through launcher)
 │   ├── linux_util.py        # System utilities
 │   ├── clip_hist.py         # Clipboard management
 │   └── messaging.py         # Shared output formatting
@@ -62,7 +65,7 @@ scripts/
 ### 🐍 Python Scripts
 
 - **`fzf_util.py`** - Fuzzy file operations (find, move, copy, trash)
-- **`git_util.py`** - Automated git workflows (commit, pull, status)
+- **`git_util`** - Automated Git workflows (commit, pull, status), using the repository's uv environment
 - **`linux_util.py`** - System monitoring (processes, weather, disk usage)
 - **`clip_hist.py`** - Wayland clipboard history management
 - **`python_sops.py`** - Encrypted secrets management
@@ -88,23 +91,29 @@ scripts/
 
 ```bash
 # Auto-commit configured repositories
-git_util.py -ac
+git_util -ac
 
 # Auto-commit all repositories under ~/projects
-git_util.py -ac --all
+git_util -ac --all
 
 # Pull or show status for repositories under ~/projects
-git_util.py -pld
-git_util.py -std
+git_util -pld
+git_util -std
 
 # Audit current repo before reading code
-git_util.py --audit
+git_util --audit
 
-# Commit workflow with safety checks
-git_util.py -cw "Fix: update dependencies"
+# Commit workflow with safety checks (prompts for commit message)
+git_util -cw
 ```
 
+The launcher resolves the project from its own location, including through symlinks, and preserves your current working directory, arguments, and exit status. It uses the locked runtime dependencies without the development group. Existing aliases or shortcuts invoking `python3 ~/scripts/bin/git_util.py` should instead invoke `~/scripts/bin/git_util`; direct execution of `git_util.py` is retired.
+
 Bulk discovery searches nested repositories under `~/projects`; worktrees and submodules are excluded. `--all` only expands auto-commit when used with `-ac`; `-ac` alone keeps configured paths. Bulk commit/push skips repositories with files larger than 50 MB, prints a CRITICAL warning, and continues with remaining repositories.
+
+Secret-backed paths are loaded only for configured auto-commit (`git_util -ac` without `--all`): `notes_path`, `tasks_path`, then `~/pics/wallpapers`, as before. Help, audit, discovery-based bulk commands, and current-repository commands do not invoke SOPS. `git_util -ac --all` uses discovered repositories without loading these configured paths.
+
+Both `-ac` and `-cw` stop a repository's command chain if `git add`, `git commit`, or `git push` fails and report the failed step with Git's error. Bulk auto-commit continues with remaining repositories and summarizes each outcome. Exit status is 1 if any repository fails (including a missing configured path or failed Git status check), otherwise 0; oversized repositories remain skips in bulk mode. A failed push leaves the local commit intact; resolve the error and push it manually. `-cw` also exits 1 when its safety checks prevent the commit.
 
 ### File Management
 

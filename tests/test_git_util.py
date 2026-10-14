@@ -1,16 +1,15 @@
 import importlib
+import os
 import sys
 from pathlib import Path
-from subprocess import CompletedProcess
-from unittest.mock import patch
+from subprocess import CompletedProcess, run
 
 import pytest
 
 BIN = Path(__file__).resolve().parents[1] / "bin"
 sys.path.insert(0, str(BIN))
 
-with patch("python_sops.get_secret", return_value=None):
-    git_util = importlib.import_module("git_util")
+git_util = importlib.import_module("git_util")
 
 
 def test_auto_commit_all_processes_nested_project_repositories(monkeypatch, tmp_path):
@@ -205,3 +204,111 @@ def test_push_all_option_is_rejected(monkeypatch, capsys, tmp_path):
 
     assert error.value.code == 2
     assert "unrecognized arguments: --push_all_dirs" in capsys.readouterr().err
+
+
+@pytest.mark.parametrize("failed_step", ["add", "commit", "push"])
+@pytest.mark.parametrize("workflow", ["--auto_commit", "--commit_workflow"])
+def test_commit_failure_stops_repository_and_exits_nonzero(
+    monkeypatch, tmp_path, caplog, capsys, failed_step, workflow
+):
+    failed = tmp_path / "failed"
+    later = tmp_path / "later"
+    failed.mkdir()
+    later.mkdir()
+    commands = []
+
+    def run(cmd, capture_output=True, text=True, cwd=None, check=False):
+        commands.append((cmd, cwd))
+        if cmd[:2] == ["git", failed_step] and cwd == failed:
+            return CompletedProcess(cmd, 1, stdout="", stderr=f"{failed_step} rejected")
+        if cmd[:2] == ["git", "rev-parse"]:
+            stdout = str(failed)
+        elif cmd[:2] == ["git", "status"] and "--porcelain" in cmd:
+            stdout = " M tracked-file"
+        else:
+            stdout = ""
+        return CompletedProcess(cmd, 0, stdout=stdout, stderr="")
+
+    monkeypatch.chdir(failed)
+    monkeypatch.setattr(git_util.CONFIG, "paths", [failed, later])
+    monkeypatch.setattr(git_util.subprocess, "run", run)
+    monkeypatch.setattr("builtins.input", lambda _: "fix: smoke")
+    monkeypatch.setattr(sys, "argv", ["git_util.py", workflow])
+
+    with pytest.raises(SystemExit) as error:
+        git_util.main()
+
+    assert error.value.code == 1
+    assert f"{failed_step} rejected" in caplog.text
+    assert str(failed) in caplog.text
+    steps = ["add", "commit", "push"]
+    forbidden = steps[steps.index(failed_step) + 1 :]
+    assert not any(cmd[0] == "git" and cmd[1] in forbidden and cwd == failed for cmd, cwd in commands)
+    if workflow == "--auto_commit":
+        assert any(cmd[:2] == ["git", "push"] and cwd == later for cmd, cwd in commands)
+        summary = capsys.readouterr().out
+        assert f"failed ({failed_step})" in summary
+    else:
+        assert not any(cmd[:2] == ["git", "status"] for cmd, _ in commands)
+
+
+@pytest.mark.parametrize("missing", [False, True])
+def test_bulk_preflight_failure_skips_mutation_and_continues(monkeypatch, tmp_path, caplog, missing):
+    failed = tmp_path / "failed"
+    later = tmp_path / "later"
+    if not missing:
+        failed.mkdir()
+    later.mkdir()
+    commands = []
+
+    def run(cmd, capture_output=True, text=True, cwd=None, check=False):
+        commands.append((cmd, cwd))
+        if cmd[:2] == ["git", "status"] and cwd == failed:
+            return CompletedProcess(cmd, 128, stdout="", stderr="not a git repository")
+        stdout = " M tracked-file" if cmd[:2] == ["git", "status"] else ""
+        return CompletedProcess(cmd, 0, stdout=stdout, stderr="")
+
+    monkeypatch.setattr(git_util.subprocess, "run", run)
+
+    assert git_util.auto_commit([failed, later]) is False
+    assert str(failed) in caplog.text
+    assert not any(cmd[0] == "git" and cmd[1] in {"add", "commit", "push"} and cwd == failed for cmd, cwd in commands)
+    assert any(cmd[:2] == ["git", "push"] and cwd == later for cmd, cwd in commands)
+
+
+def test_help_works_without_sops(tmp_path):
+    result = run(
+        [sys.executable, str(BIN / "git_util.py"), "--help"],
+        env={**os.environ, "PATH": str(tmp_path)},
+        capture_output=True,
+        text=True,
+    )
+
+    assert result.returncode == 0, result.stderr
+    assert "--auto_commit" in result.stdout
+
+
+@pytest.mark.parametrize(
+    ("secrets", "expected"),
+    [
+        ({"notes_path": "notes", "tasks_path": "tasks"}, ["notes", "tasks", "pics/wallpapers"]),
+        ({}, ["pics/wallpapers"]),
+    ],
+)
+def test_default_auto_commit_preserves_secret_paths_and_wallpaper_fallback(monkeypatch, tmp_path, secrets, expected):
+    for relative in ["notes", "tasks", "pics/wallpapers"]:
+        (tmp_path / relative).mkdir(parents=True)
+    status_paths = []
+
+    def run_command(cmd, capture_output=True, text=True, cwd=None, check=False):
+        if cmd[:2] == ["git", "status"]:
+            status_paths.append(cwd)
+        return CompletedProcess(cmd, 0, stdout="", stderr="")
+
+    monkeypatch.setattr(git_util, "HOME", tmp_path)
+    monkeypatch.setattr(git_util, "CONFIG", git_util.GitConfig())
+    monkeypatch.setattr(git_util.ps, "get_secret", lambda key: secrets.get(key))
+    monkeypatch.setattr(git_util.subprocess, "run", run_command)
+
+    assert git_util.auto_commit() is True
+    assert status_paths == [tmp_path / relative for relative in expected]

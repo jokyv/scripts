@@ -79,19 +79,19 @@ def check_uncommitted_changes() -> bool:
     """
     Check if there are uncommitted git changes in any tracked repo.
 
-    Uses git_util.py --status_all_dirs which returns 0 if changes exist, 1 if none.
+    Uses git_util --status_all_dirs which returns 0 if changes exist, 1 if none.
     """
-    git_util_path = Path.home() / "scripts" / "bin" / "git_util.py"
+    git_util_path = Path(__file__).resolve().with_name("git_util")
     if not git_util_path.exists():
-        display_message("warning", "git_util.py not found, skipping git check")
+        display_message("warning", "git_util not found, skipping git check")
         return False
 
     try:
         result = subprocess.run(
-            [sys.executable, str(git_util_path), "--status_all_dirs"],
+            [str(git_util_path), "--status_all_dirs"],
             capture_output=True,
         )
-        # git_util.py returns 0 when changes exist, 1 when no changes
+        # git_util returns 0 when changes exist, 1 when no changes
         return result.returncode == 0
     except Exception as e:
         display_message("error", f"Failed to check git status: {e}")

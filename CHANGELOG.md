@@ -1,3 +1,14 @@
+## [Unreleased]
+
+### Features
+
+- _(git)_ Add a project-aware `git_util` launcher that uses uv without manual environment activation; migrate shell aliases, the Git audit alias, and the logout Git check.
+
+### Bug Fixes
+
+- _(git)_ Stop commit/push chains on failed Git commands, report errors instead of success, and exit nonzero on failure while continuing remaining bulk repositories.
+- _(git)_ Load secret-backed repository paths only for configured auto-commit; other Git commands no longer invoke SOPS during startup.
+
 ## [1.0.0] - 2026-10-11
 
 ### 🚀 Features
