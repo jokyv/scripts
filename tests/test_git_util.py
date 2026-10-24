@@ -112,6 +112,15 @@ def test_bulk_discovery_commands_share_projects_root(monkeypatch, tmp_path):
     assert len(discoveries) == 3
     assert all(cwd == projects for _, cwd in discoveries)
     assert all(cmd[-len(git_util.CONFIG.exclude_dirs) :] == git_util.CONFIG.exclude_dirs for cmd, _ in discoveries)
+    assert all(
+        any(cmd[index : index + 2] == ["-gE", ".local/"] for index in range(len(cmd) - 1)) for cmd, _ in discoveries
+    )
+    assert all(
+        any(cmd[index : index + 2] == ["-gE", ".config/nvm"] for index in range(len(cmd) - 1)) for cmd, _ in discoveries
+    )
+    assert all(
+        any(cmd[index : index + 2] == ["-gE", ".claude/"] for index in range(len(cmd) - 1)) for cmd, _ in discoveries
+    )
     git_workdirs = [cwd for cmd, cwd in commands if cmd[0] == "git"]
     assert repo in git_workdirs
     assert worktree not in git_workdirs

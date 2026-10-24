@@ -67,9 +67,11 @@ class GitConfig:
         if self.exclude_dirs is None:
             self.exclude_dirs = [
                 "-gE",
-                ".local/share",
+                ".local/",
                 "-gE",
-                "helix/",
+                ".config/nvm",
+                "-gE",
+                ".claude/",
                 "-gE",
                 ".pyenv",
                 "-gE",
