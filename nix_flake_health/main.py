@@ -10,7 +10,6 @@ input. Compares installed versions against latest available versions.
 import argparse
 import json
 import os
-import re
 import subprocess
 from dataclasses import dataclass
 from datetime import datetime
@@ -20,6 +19,11 @@ import tomllib
 from rich.console import Console
 from rich.progress import BarColumn, Progress, SpinnerColumn, TaskProgressColumn, TextColumn
 from rich.table import Table
+
+if __package__:
+    from .versions import compare_versions
+else:
+    from versions import compare_versions
 
 # ===============================================
 # Variables
@@ -263,7 +267,7 @@ def extract_nixpkgs_info(flake_path: Path) -> dict:
 
             return {"branch": branch, "locked_rev": locked_rev, "last_modified": last_modified}
 
-        except json.JSONDecodeError, KeyError:
+        except (json.JSONDecodeError, KeyError):
             return {"branch": "nixos-unstable", "locked_rev": None, "last_modified": None}
 
     finally:
@@ -381,7 +385,7 @@ def read_cache(key: str) -> str | None:
         try:
             with open(cache_path) as f:
                 return json.load(f)
-        except json.JSONDecodeError, FileNotFoundError:
+        except (json.JSONDecodeError, FileNotFoundError):
             return None
     return None
 
@@ -515,7 +519,7 @@ def get_batch_package_versions(
                 if use_cache and version != "not found":
                     cache_key = f"{flake_ref}-{input_name}-{package}"
                     write_cache(cache_key, version)
-        except json.JSONDecodeError, KeyError:
+        except (json.JSONDecodeError, KeyError):
             # Fall back to individual checks
             for package in packages_to_fetch:
                 results[package] = get_package_version(flake_ref, input_name, package, use_cache)
@@ -525,87 +529,6 @@ def get_batch_package_versions(
             results[package] = get_package_version(flake_ref, input_name, package, use_cache)
 
     return results
-
-
-def parse_version(version_str: str) -> tuple[list[int], str]:
-    """
-    Parse version string into comparable parts.
-
-    Parameters
-    ----------
-    version_str : str
-        Version string to parse
-
-    Returns
-    -------
-    Tuple[List[int], str]
-        Tuple of (numeric parts, remaining string)
-
-    """
-    # Extract numeric parts at the beginning
-    match = re.match(r"^(\d+(?:\.\d+)*)", version_str)
-    if match:
-        numeric_part = match.group(1)
-        numeric_parts = [int(x) for x in numeric_part.split(".")]
-        remaining = version_str[len(numeric_part) :]
-        return numeric_parts, remaining
-
-    return [], version_str
-
-
-def compare_versions(current: str, latest: str) -> str:
-    """
-    Compare two version strings using semantic versioning.
-
-    Parameters
-    ----------
-    current : str
-        Current version string
-    latest : str
-        Latest version string
-
-    Returns
-    -------
-    str
-        Comparison result: 'equal', 'outdated', or 'unknown'
-
-    """
-    if current == "not found" or latest == "not found":
-        return "unknown"
-
-    if current == latest:
-        return "equal"
-
-    # Try semantic version comparison
-    try:
-        current_parts, current_suffix = parse_version(current)
-        latest_parts, latest_suffix = parse_version(latest)
-
-        # If we have numeric parts, compare them
-        if current_parts and latest_parts:
-            # Pad shorter version with zeros
-            max_len = max(len(current_parts), len(latest_parts))
-            current_parts += [0] * (max_len - len(current_parts))
-            latest_parts += [0] * (max_len - len(latest_parts))
-
-            # Compare numeric parts
-            for c, l in zip(current_parts, latest_parts):
-                if c < l:
-                    return "outdated"
-                elif c > l:
-                    return "equal"  # Current is newer than "latest"
-
-            # If numeric parts are equal, compare suffixes
-            if current_suffix != latest_suffix:
-                return "outdated"
-
-            return "equal"
-    except Exception:
-        # Fall back to string comparison
-        pass
-
-    # Simple fallback: if they're not equal, assume outdated
-    return "outdated"
 
 
 def format_version(version: str, status: str) -> str:

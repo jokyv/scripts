@@ -37,5 +37,14 @@ security = ["detect-secrets", "trufflehog"]
 # add deptry with `uv add --dev deptry`
 # run deptry with `uv run deptry .`
 [tool.deptry]
-per_rule_ignores = { DEP002 = ["deptry", "ruff", "ty", "pytest"], DEP001 = ["python_sops", "messaging"], DEP003 = ["python_sops", "messaging"] }
 exclude = ["archived_scripts/**", ".venv/**"]
+
+[tool.deptry.per_rule_ignores]
+DEP002 = ["deptry", "ruff", "ty", "pytest"]
+DEP001 = ["python_sops", "messaging", "versions"]
+DEP003 = ["python_sops", "messaging", "versions"]
+DEP004 = ["pytest"]
+
+[tool.pytest.ini_options]
+pythonpath = ["."]
+testpaths = ["tests"]
