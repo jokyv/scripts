@@ -553,7 +553,7 @@ def status_all_git_dirs() -> bool:
     """
     display_message("info", "Checking status of all git repositories")
 
-    git_dirs = find_git_directories(PROJECTS_PATH, CONFIG.exclude_dirs)
+    git_dirs = find_git_directories(HOME, CONFIG.exclude_dirs)
 
     if not git_dirs:
         display_message("warning", "No git repositories found")
@@ -787,7 +787,7 @@ def main() -> None:
         "-pld", "--pull_all_dirs", action="store_true", help="Pull all git repositories under ~/projects"
     )
     parser.add_argument(
-        "-std", "--status_all_dirs", action="store_true", help="Check status of all git repositories under ~/projects"
+        "-std", "--status_all_dirs", action="store_true", help="Check status of all git repositories under $HOME"
     )
     parser.add_argument("--audit", action="store_true", help="Run git audit commands for current repo")
     parser.add_argument(

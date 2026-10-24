@@ -79,13 +79,15 @@ def test_all_without_auto_commit_only_prints_help(monkeypatch, capsys):
     assert commands == []
 
 
-def test_bulk_discovery_commands_share_projects_root(monkeypatch, tmp_path):
+def test_bulk_discovery_uses_home_for_status_only(monkeypatch, tmp_path):
     projects = tmp_path / "projects"
     repo = projects / "group" / "nested" / "repo"
     (repo / ".git").mkdir(parents=True)
     worktree = projects / "worktree"
     worktree.mkdir()
     (worktree / ".git").write_text("gitdir: ../repo/.git/worktrees/worktree\n")
+    home_repo = tmp_path / "other" / "repo"
+    (home_repo / ".git").mkdir(parents=True)
     commands = []
 
     def run(cmd, capture_output=True, text=True, cwd=None, check=False):
@@ -110,7 +112,7 @@ def test_bulk_discovery_commands_share_projects_root(monkeypatch, tmp_path):
 
     discoveries = [(cmd, cwd) for cmd, cwd in commands if cmd[0] == "fd" and "-td" in cmd]
     assert len(discoveries) == 3
-    assert all(cwd == projects for _, cwd in discoveries)
+    assert [cwd for _, cwd in discoveries] == [projects, projects, tmp_path]
     assert all(cmd[-len(git_util.CONFIG.exclude_dirs) :] == git_util.CONFIG.exclude_dirs for cmd, _ in discoveries)
     assert all(
         any(cmd[index : index + 2] == ["-gE", ".local/"] for index in range(len(cmd) - 1)) for cmd, _ in discoveries
@@ -123,6 +125,7 @@ def test_bulk_discovery_commands_share_projects_root(monkeypatch, tmp_path):
     )
     git_workdirs = [cwd for cmd, cwd in commands if cmd[0] == "git"]
     assert repo in git_workdirs
+    assert home_repo in git_workdirs
     assert worktree not in git_workdirs
 
 
