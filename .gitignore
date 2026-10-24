@@ -1,3 +1,4 @@
 secrets.yaml
 .aider*
 .env
+/docs/plans/
