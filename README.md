@@ -176,6 +176,10 @@ This project uses modern Python tooling:
 - **`typos`** - Spell checking
 - **`pytest`** - Testing framework
 
+### Continuous Integration
+
+GitHub Actions runs the test suite, dependency analysis, Python formatting checks, focused lint checks for the Nix version module, and a CLI help smoke test. The broader repository-wide Ruff lint and Bandit scans still report existing findings and are not CI gates yet.
+
 ### Running Tests and Checks
 
 ```bash

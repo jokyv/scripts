@@ -1,0 +1,35 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  checks:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.14"
+      - uses: astral-sh/setup-uv@v6
+        with:
+          enable-cache: true
+
+      - name: Install development and lint dependencies
+        run: uv sync --locked --group dev --group lint
+      - name: Run tests
+        run: uv run --locked --group dev pytest -q
+      - name: Check dependencies
+        run: uv run --locked --group lint deptry .
+      - name: Lint version checks
+        run: uv run --locked --group lint ruff check nix_flake_health/versions.py tests/test_nix_flake_health.py
+      - name: Check Python formatting
+        run: uv run --locked --group lint ruff format --check bin/ tests/ nix_flake_health/
+      - name: Check Nix utility CLI
+        run: uv run --locked --group dev python nix_flake_health/main.py --help
