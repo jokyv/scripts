@@ -2,7 +2,7 @@
 
 # Here all my re-usable bash functions
 # If you want to use on another bash script simply do the following:
-# source ~/scripts/bash_util.sh inside another .sh file
+# source ~/scripts/bin/bash_util.sh inside another .sh file
 # then run the function normally as pause_for_user
 
 # Ask the enter before continue to the next section of the script
@@ -19,6 +19,24 @@ work_in_progress() {
   echo ""
   echo 'this section is work in progress'
   echo ""
+}
+
+cd_with_eza() {
+  if [ "$#" -ne 1 ]; then
+    printf 'Usage: cd_with_eza DIRECTORY\n' >&2
+    return 2
+  fi
+
+  cd -- "$1" && eza -hT --tree --level=2 --sort=ext
+}
+
+mkd() {
+  if [ "$#" -ne 1 ]; then
+    printf 'Usage: mkd DIRECTORY\n' >&2
+    return 2
+  fi
+
+  mkdir -p -- "$1" && cd -- "$1"
 }
 
 # Ask Y/n
