@@ -160,9 +160,6 @@ weekly_updates() {
 # rename files in bulk
 # ----------------------------------------------------------------------------
 bulk_rename() {
-  # TODO:
-  # use xargs -i touch {}.png etc to rename the files
-
   read -t 10 -p "Enter a phrase: " phrase
   count=0
   for file in *.png; do

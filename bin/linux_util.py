@@ -79,7 +79,6 @@ def cd_with_eza(directory):
         print(f"Error: {e}", file=sys.stderr)
 
 
-# TODO: that is working!
 def check_driver():
     """
     Check NVMe drive health using smartctl.
@@ -93,7 +92,6 @@ def check_driver():
         print(f"Command failed with error: {e}", file=sys.stderr)
 
 
-# TODO: that is working!
 def fkill(signal=9):
     """
     Interactive process killer using fzf for selection.
@@ -170,7 +168,6 @@ def weather(location="Serangoon", detailed=False, multi_city=False):
         print(f"An error occurred: {e}")
 
 
-# TODO: that is working!
 def ip_address(ip=""):
     try:
         url = f"https://ipinfo.io/{ip}"
