@@ -30,7 +30,7 @@ git clone https://github.com/jokyv/scripts.git
 cd scripts
 
 # Install runtime dependencies only
-uv sync
+uv sync --no-dev
 
 # OR for development (includes linting, testing tools)
 uv sync --all-groups
@@ -48,42 +48,52 @@ Git commands use the `git_util` launcher, which selects this repository's Python
 
 ```
 scripts/
-├── bin/                      # Main executable scripts
-│   ├── fzf_util.py          # Fuzzy file workflows
-│   ├── git_util             # Project-aware Git launcher
-│   ├── git_util.py          # Git implementation (run through launcher)
-│   ├── linux_util.py        # System utilities
-│   ├── clip_hist.py         # Clipboard management
-│   └── messaging.py         # Shared output formatting
-├── archived_scripts/        # Legacy/deprecated scripts
-├── nix_flake_health/        # Nix flake health checker
-└── pyproject.toml           # Project configuration
+├── bin/                      # Standalone command-line tools and shared helpers
+│   ├── git_util              # Git launcher; implementation is git_util.py
+│   ├── python/               # Python project starter/template
+│   └── ...                   # Other commands listed in the command map below
+├── nix_flake_health/
+│   ├── main.py               # CLI and orchestration
+│   ├── versions.py           # Package-version comparison policy
+│   └── apps.toml             # Default package list
+├── tests/                    # Behavior tests for Git and Nix utilities
+├── archived_scripts/         # Legacy/deprecated scripts
+├── docs/                     # Agent guidance
+├── pyproject.toml            # Dependencies and tool configuration
+└── uv.lock                   # Locked Python dependencies
 ```
 
-## 🛠️ Core Utilities
+## 🛠️ Command Map
 
-### 🐍 Python Scripts
+| Path                                    | Purpose                                                                            |
+| --------------------------------------- | ---------------------------------------------------------------------------------- |
+| `bin/git_util`                          | Recommended Git CLI launcher; runs `bin/git_util.py` in the locked uv environment. |
+| `bin/git_util.py`                       | Implements Git workflows; invoke through `bin/git_util` rather than directly.      |
+| `bin/fzf_util.py`                       | Fuzzy file search, move, copy, and trash workflows.                                |
+| `bin/script_launcher.py`                | Find and launch executable programs with FZF.                                      |
+| `bin/bookmarks.py`                      | Search and open browser bookmarks.                                                 |
+| `bin/define_word.py`                    | Look up a word from the clipboard or command line.                                 |
+| `bin/dfn.py`                            | Generate date-formatted filenames.                                                 |
+| `bin/webapp.py`                         | Create, list, and remove Brave web-app launchers.                                  |
+| `bin/linux_util.py`                     | Linux system, process, network, and weather utilities.                             |
+| `bin/clip_hist.py`                      | Wayland clipboard-history actions.                                                 |
+| `bin/my_logout.py`                      | Session logout/shutdown actions with Git safety checks.                            |
+| `bin/take_screenshot.py`                | Capture a selected screen region.                                                  |
+| `bin/update_wall.py`                    | Change wallpapers and manage the rotation loop.                                    |
+| `bin/update_grub.sh`                    | Regenerate the GRUB configuration.                                                 |
+| `bin/git_commit_with_gemini.py`         | Generate a commit message from staged Git changes.                                 |
+| `bin/release.py`                        | Guide a tagged release and update the changelog.                                   |
+| `bin/git_crypt_init.sh`                 | Initialize encrypted Git repository support.                                       |
+| `bin/python_execute_script.py`          | Run a Python script only when a virtual environment is active.                     |
+| `bin/python_pip_update.py`              | Update Python packages in the active environment.                                  |
+| `bin/python/python_code_init.py`        | Create a Python script from the project template.                                  |
+| `bin/python/python_project_template.py` | Starter template used by `python_code_init.py`.                                    |
+| `bin/python_sops.py`                    | Shared SOPS decryption helper used by Git workflows.                               |
+| `bin/messaging.py`                      | Shared Rich console output and logging helpers.                                    |
+| `bin/bash_util.sh`                      | Shared Bash utility functions.                                                     |
+| `nix_flake_health/main.py`              | Compare configured Nix package versions with nixpkgs; see `--help` for options.    |
 
-- **`fzf_util.py`** - Fuzzy file operations (find, move, copy, trash)
-- **`git_util`** - Automated Git workflows (commit, pull, status), using the repository's uv environment
-- **`linux_util.py`** - System monitoring (processes, weather, disk usage)
-- **`clip_hist.py`** - Wayland clipboard history management
-- **`python_sops.py`** - Encrypted secrets management
-- **`bookmarks.py`** - Browser bookmark launcher
-- **`dfn.py`** - Date-formatted filename generator
-
-### 🔧 Shell Scripts
-
-- **`bash_util.sh`** - Shared bash utility functions
-- **`take_screenshot.sh`** - Screenshot capture utility
-- **`update_wall.sh`** - Wallpaper management
-- **`weather.sh`** - Weather information
-- **`my_logout.sh`** - Session management
-
-### 🔒 Security Tools
-
-- **`git_crypt_init.sh`** - Encrypted git repository setup
-- **SOPS integration** - YAML-based secret management
+`bin/test.py` is an older Git utility snapshot, **not** the pytest suite. I found no in-repository callers; check any personal aliases before deciding whether to archive or remove it. The actual tests live under `tests/`.
 
 ## 📋 Usage Examples
 
@@ -166,18 +176,21 @@ This project uses modern Python tooling:
 - **`typos`** - Spell checking
 - **`pytest`** - Testing framework
 
-### Running Tests
+### Running Tests and Checks
 
 ```bash
-# Run linting and formatting
-uv run ruff check .
-uv run ruff format .
+# Run tests
+uv run --group dev pytest -q
+
+# Check linting and formatting without changing files
+uv run --group lint ruff check bin/ tests/ nix_flake_health/
+uv run --group lint ruff format --check bin/ tests/ nix_flake_health/
 
 # Run dependency analysis
-uv run deptry .
+uv run --group lint deptry .
 
 # Run security scan
-uv run bandit -r bin/
+uv run --group lint bandit -r bin/
 ```
 
 ## 🖥️ Platform Support

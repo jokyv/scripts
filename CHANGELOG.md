@@ -9,6 +9,10 @@
 - _(git)_ Stop commit/push chains on failed Git commands, report errors instead of success, and exit nonzero on failure while continuing remaining bulk repositories.
 - _(git)_ Load secret-backed repository paths only for configured auto-commit; other Git commands no longer invoke SOPS during startup.
 
+### Documentation
+
+- Correct runtime-only setup, list active Python utilities, and document pytest and explicit quality-tool commands.
+
 ## [1.0.0] - 2026-10-11
 
 ### 🚀 Features
